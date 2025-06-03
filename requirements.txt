@@ -4,7 +4,3 @@ timezonefinder
 geopy
 openai
 pycountry
-datetime
-math
-re
-os
