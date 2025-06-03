@@ -1,0 +1,88 @@
+import streamlit as st
+import pycountry
+from geopy.geocoders import Nominatim
+from timezonefinder import TimezoneFinder
+import datetime as dt
+from zoneinfo import ZoneInfo
+from four_pillars_basic import four_pillars, judge_strength, STEM
+
+# --- 1. Inputs ---
+st.title("🌿 MyElement – Discover Your Four Pillars")
+
+# Name, Gender
+name = st.text_input("Name")
+gender = st.selectbox("Gender", ["Male", "Female", "Other"])
+
+# Country dropdown (auto alphabetically)
+country_list = sorted([c.name for c in pycountry.countries])
+country = st.selectbox(
+    "Country of Birth",
+    country_list,
+    index=country_list.index("Malaysia")
+)
+
+# Date and Time
+dob = st.date_input(
+    "Date of Birth",
+    value=dt.date(1990, 1, 1),
+    min_value=dt.date(1900, 1, 1),
+    max_value=dt.date.today() + dt.timedelta(days=365*2)
+)
+col1, col2 = st.columns(2)
+with col1:
+    hour = st.selectbox("Hour (H)", list(range(0, 24)), index=12)
+with col2:
+    minute = st.selectbox("Minute (M)", list(range(0, 60)), index=0)
+birth_time = dt.time(hour, minute)
+
+st.caption("Tip: Country is enough for most cases; city support coming soon!")
+
+# --- 2. On Button Click: Everything Happens Here! ---
+if st.button("Generate My Pillars"):
+    try:
+        # Geocode country (centroid)
+        geolocator = Nominatim(user_agent="my_bazi_app")
+        tf = TimezoneFinder()
+        location = geolocator.geocode(country)
+        if not location:
+            st.error("Country not found! Try a different spelling.")
+        else:
+            timezone_str = tf.timezone_at(lng=location.longitude, lat=location.latitude)
+            if not timezone_str:
+                st.error("Could not determine timezone for this country.")
+            else:
+                # Compose timezone-aware datetime and get offset
+                local_dt = dt.datetime.combine(dob, birth_time)
+                try:
+                    local_dt = local_dt.replace(tzinfo=ZoneInfo(timezone_str))
+                    utc_offset = local_dt.utcoffset().total_seconds() / 3600
+                except Exception as e:
+                    st.error(f"Timezone error: {e}")
+                    utc_offset = 8  # fallback
+
+                # --- 3. Four Pillars calculation ---
+                Y, M, D, H = four_pillars(local_dt, int(utc_offset))
+                vis_stems    = [Y[0], M[0], D[0], H[0]]
+                vis_branches = [Y[1], M[1], D[1], H[1]]
+                strength, raw = judge_strength(
+                    day_stem=D[0],
+                    month_branch=M[1],
+                    vis_stems=vis_stems,
+                    vis_branches=vis_branches
+                )
+
+                # --- 4. Display results ---
+                st.subheader("Your Four Pillars")
+                st.write(f"**Year  :** {Y}")
+                st.write(f"**Month :** {M}")
+                st.write(f"**Day   :** {D}  ← *Day Master*")
+                st.write(f"**Hour  :** {H}")
+
+                st.markdown("---")
+                st.subheader("Day-Master Strength")
+                st.success(f"{strength}  (score {raw:+d})")
+
+                st.info(f"Timezone: `{timezone_str}` | UTC offset: {utc_offset:+.1f}")
+
+    except Exception as e:
+        st.error(f"❌ Something went wrong: {e}")

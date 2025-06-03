@@ -1,0 +1,11 @@
+streamlit
+pandas
+timezonefinder
+geopy
+openai
+pycountry
+datetime
+zoneinfo
+math
+re
+os
