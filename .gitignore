@@ -1,0 +1,15 @@
+# Ignore Streamlit secrets
+.streamlit/secrets.toml
+
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Mac system files
+.DS_Store
+
+# Python virtual environments
+venv/
+env/
+.myelement-env/
