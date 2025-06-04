@@ -4,3 +4,5 @@ timezonefinder
 geopy
 openai
 pycountry
+gspread
+oauth2client

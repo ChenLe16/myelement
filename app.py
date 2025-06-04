@@ -1,5 +1,18 @@
 import re
 
+# --- Google Sheets Integration ---
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+import json
+
+def append_to_gsheet(data):
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    creds_dict = json.loads(st.secrets["google_service_account"])
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+    client = gspread.authorize(creds)
+    sheet = client.open("MyElement Leads").sheet1  # Change to your sheet name if needed
+    sheet.append_row(data)
+
 import streamlit as st
 import pycountry
 from geopy.geocoders import Nominatim
@@ -129,6 +142,21 @@ if st.button("✨ Generate My Elemental Star Meter"):
                         if email and is_valid_email(email):
                             st.session_state["email_submitted"] = True
                             st.session_state["submitted_email"] = email
+                            # Google Sheet row
+                            timestamp = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                            row = [
+                                timestamp,
+                                name,
+                                email,
+                                country,
+                                dob.strftime("%Y-%m-%d"),
+                                birth_time.strftime("%H:%M"),
+                                gender,
+                            ]
+                            try:
+                                append_to_gsheet(row)
+                            except Exception as e:
+                                st.warning(f"Unable to log to Google Sheet: {e}")
                         else:
                             st.warning("Please enter a valid email address.")
                 if st.session_state.get("email_submitted"):
