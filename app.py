@@ -52,6 +52,13 @@ with col2:
     minute = st.selectbox("Minute (M)", list(range(0, 60)), index=0)
 birth_time = dt.time(hour, minute)
 
+st.markdown(
+    "<div style='background: #274559; color: #eaf7fa; border-radius: 8px; padding: 13px 7px; text-align:center; margin-bottom:13px; font-size:1.09em;'>"
+    "Your birth details are private and never stored on our server."
+    "</div>",
+    unsafe_allow_html=True
+)
+
 st.caption("Tip: Country is enough for most cases; city support coming soon!")
 st.markdown("</div>", unsafe_allow_html=True)
 
@@ -87,16 +94,12 @@ if st.button("✨ Generate My Elemental Star Meter"):
                 display_element_star_meter(result)
                 st.markdown("---")
 
-                st.info("Your birth details are private and never stored on our server.")
-
                 st.markdown(
-                    f"""
-                    <div style='text-align:center; color:#78908b; margin-top:16px; font-size:1.05em;'>
-                        Standard Time: <b>{result['standard_dt'].strftime('%Y-%m-%d %H:%M')}</b> &bull;
-                        Solar-corrected: <b>{result['solar_dt'].strftime('%Y-%m-%d %H:%M')}</b> &bull;
-                        Timezone: <b>{timezone_str}</b>
-                    </div>
-                    """,
+                    f"<div style='text-align:center; color:#78908b; margin-top:16px; font-size:1.08em;'>"
+                    f"<div><b>Standard Time:</b> {result['standard_dt'].strftime('%Y-%m-%d %H:%M')}</div>"
+                    f"<div><b>Solar-corrected:</b> {result['solar_dt'].strftime('%Y-%m-%d %H:%M')}</div>"
+                    f"<div><b>Timezone:</b> {timezone_str}</div>"
+                    f"</div>",
                     unsafe_allow_html=True
                 )
 
