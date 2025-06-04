@@ -21,3 +21,4 @@ env/
 
 # System folders
 .devcontainer/
+.python-version
