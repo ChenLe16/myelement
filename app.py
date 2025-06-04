@@ -10,6 +10,24 @@ from display_helpers import display_pillars_table, display_element_star_meter
 # ----- Streamlit Page Config -----
 st.set_page_config(page_title="MyElement - BaZi Analyzer", page_icon="🌿", layout="centered")
 
+# ----- Hide Streamlit Default UI (Fork, GitHub, Menu, Watermark) -----
+st.markdown("""
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .stDeployButton {display: none !important;}
+    .stActionButton {display: none !important;}
+    .stStatusWidget {display: none !important;}
+    .stToolbar {display: none !important;}
+    .stShareLogo {display: none !important;}
+    [data-testid="stDecoration"] {display: none !important;}
+    /* For Streamlit Cloud's floating action buttons: */
+    .css-1q7g7tu.e1fqkh3o3 {display: none !important;}
+    /* Sidebar and navigation will remain visible */
+    </style>
+""", unsafe_allow_html=True)
+
 # ----- Hero Banner -----
 st.markdown(
     """
