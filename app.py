@@ -10,6 +10,21 @@ from display_helpers import display_pillars_table, display_element_star_meter
 # ----- Streamlit Page Config -----
 st.set_page_config(page_title="MyElement - BaZi Analyzer", page_icon="🌿", layout="centered")
 
+# Google Analytics (gtag.js)
+st.markdown(
+    """
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y0TSDFY3E4"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-Y0TSDFY3E4');
+    </script>
+    """,
+    unsafe_allow_html=True
+)
+
 # ----- Hero Banner -----
 st.markdown(
     """
