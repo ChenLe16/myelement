@@ -110,60 +110,71 @@ if st.button("✨ Generate My Elemental Star Meter"):
                 result = calculate_bazi_with_solar_correction(
                     dob, birth_time, location.longitude, utc_offset
                 )
-
-                st.markdown("---")
-                display_pillars_table(result)
-                display_element_score_breakdown(result)
-                st.markdown(("---"))
-                display_element_star_meter(result)
-                st.markdown("---")
-
-                display_time_info(result, timezone_str)
-
-                # --- PDF Email Request Section ---
-                st.markdown("---")
-                with st.form("email_form"):
-                    st.markdown(
-                        "<h4 style='text-align:left;'>Get Your Full PDF Report</h4>",
-                        unsafe_allow_html=True
-                    )
-                    email = st.text_input(
-                        "Enter your email to receive your personalized report and join our newsletter:",
-                        placeholder="you@email.com"
-                    ).strip()
-                    st.markdown(
-                        "<div style='text-align:center; color:#89acc0; font-size:0.98em;'>"
-                        "By submitting, you agree to receive your PDF result and occasional updates from us. You can unsubscribe at any time."
-                        "</div>",
-                        unsafe_allow_html=True
-                    )
-                    send_pdf = st.form_submit_button("Send to my email")
-                    if send_pdf:
-                        if email and is_valid_email(email):
-                            st.session_state["email_submitted"] = True
-                            st.session_state["submitted_email"] = email
-                            # Google Sheet row
-                            timestamp = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                            row = [
-                                timestamp,
-                                name,
-                                email,
-                                country,
-                                dob.strftime("%Y-%m-%d"),
-                                birth_time.strftime("%H:%M"),
-                                gender,
-                            ]
-                            try:
-                                append_to_gsheet(row)
-                            except Exception as e:
-                                st.warning(f"Unable to log to Google Sheet: {e}")
-                        else:
-                            st.warning("Please enter a valid email address.")
-                if st.session_state.get("email_submitted"):
-                    st.success("Your report will be sent to your email soon!")
-                    st.info(f"Email submitted: **{st.session_state['submitted_email']}**")
+                st.session_state["bazi_result"] = result
+                st.session_state["timezone_str"] = timezone_str
+                st.session_state["name"] = name
+                st.session_state["gender"] = gender
+                st.session_state["country"] = country
+                st.session_state["dob"] = dob
+                st.session_state["birth_time"] = birth_time
     except Exception as e:
         st.error(f"❌ Something went wrong: {e}")
+
+# ----- Results & Email Form: Always visible if session_state has result -----
+if "bazi_result" in st.session_state:
+    st.markdown("---")
+    display_pillars_table(st.session_state["bazi_result"])
+    display_element_score_breakdown(st.session_state["bazi_result"])
+    st.markdown("---")
+    display_element_star_meter(st.session_state["bazi_result"])
+    st.markdown("---")
+    display_time_info(st.session_state["bazi_result"], st.session_state["timezone_str"])
+
+    # --- PDF Email Request Section ---
+    st.markdown("---")
+    with st.form("email_form"):
+        st.markdown(
+            "<h4 style='text-align:left;'>Get Your Full PDF Report</h4>",
+            unsafe_allow_html=True
+        )
+        email = st.text_input(
+            "Enter your email to receive your personalized report and join our newsletter:",
+            placeholder="you@email.com"
+        ).strip()
+        st.markdown(
+            "<div style='text-align:center; color:#89acc0; font-size:0.98em;'>"
+            "By submitting, you agree to receive your PDF result and occasional updates from us. You can unsubscribe at any time."
+            "</div>",
+            unsafe_allow_html=True
+        )
+        send_pdf = st.form_submit_button("Send to my email")
+        message = ""
+        if send_pdf:
+            if is_valid_email(email):
+                timestamp = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                row = [
+                    timestamp,
+                    st.session_state.get("name"),
+                    email,
+                    st.session_state.get("country"),
+                    st.session_state.get("dob").strftime("%Y-%m-%d"),
+                    st.session_state.get("birth_time").strftime("%H:%M"),
+                    st.session_state.get("gender"),
+                ]
+                try:
+                    append_to_gsheet(row)
+                    message = "success"
+                except Exception as e:
+                    message = f"error:{e}"
+            else:
+                message = "warning"
+        if message == "success":
+            st.success("✅ Row sent to Google Sheet!")
+            st.info(f"Email submitted: **{email}**")
+        elif message.startswith("error:"):
+            st.error("Unable to log to Google Sheet: " + message[6:])
+        elif message == "warning":
+            st.warning("Please enter a valid email address.")
 
 # ----- Footer -----
 st.markdown(
