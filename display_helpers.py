@@ -261,3 +261,13 @@ def display_element_score_breakdown(result):
         )
     table += "</table>"
     st.markdown(table, unsafe_allow_html=True)
+
+def display_time_info(result, timezone_str):
+    st.markdown(
+        f"<div style='text-align:center; color:#78908b; margin-top:8px; margin-bottom:8px; font-size:1.08em;'>"
+        f"<div><b>Standard Time:</b> {result['standard_dt'].strftime('%Y-%m-%d %H:%M')}</div>"
+        f"<div><b>Solar-corrected:</b> {result['solar_dt'].strftime('%Y-%m-%d %H:%M')}</div>"
+        f"<div><b>Timezone:</b> {timezone_str}</div>"
+        f"</div>",
+        unsafe_allow_html=True
+    )

@@ -5,7 +5,7 @@ from timezonefinder import TimezoneFinder
 import datetime as dt
 from zoneinfo import ZoneInfo
 from bazi_calculator import calculate_bazi_with_solar_correction
-from display_helpers import display_pillars_table, display_element_star_meter, display_element_score_breakdown
+from display_helpers import display_pillars_table, display_element_star_meter, display_element_score_breakdown, display_time_info
 
 # ----- Streamlit Page Config -----
 st.set_page_config(page_title="MyElement - BaZi Analyzer", page_icon="🌿", layout="centered")
@@ -94,14 +94,7 @@ if st.button("✨ Generate My Elemental Star Meter"):
                 display_element_star_meter(result)
                 st.markdown("---")
 
-                st.markdown(
-                    f"<div style='text-align:center; color:#78908b; margin-top:16px; font-size:1.08em;'>"
-                    f"<div><b>Standard Time:</b> {result['standard_dt'].strftime('%Y-%m-%d %H:%M')}</div>"
-                    f"<div><b>Solar-corrected:</b> {result['solar_dt'].strftime('%Y-%m-%d %H:%M')}</div>"
-                    f"<div><b>Timezone:</b> {timezone_str}</div>"
-                    f"</div>",
-                    unsafe_allow_html=True
-                )
+                display_time_info(result, timezone_str)
 
     except Exception as e:
         st.error(f"❌ Something went wrong: {e}")
