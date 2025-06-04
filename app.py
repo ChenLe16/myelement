@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pycountry
 from geopy.geocoders import Nominatim
 from timezonefinder import TimezoneFinder
@@ -10,8 +11,8 @@ from display_helpers import display_pillars_table, display_element_star_meter
 # ----- Streamlit Page Config -----
 st.set_page_config(page_title="MyElement - BaZi Analyzer", page_icon="🌿", layout="centered")
 
-# Google Analytics (gtag.js)
-st.markdown(
+# Inject Google Analytics with st.components.html (works in most cases)
+components.html(
     """
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y0TSDFY3E4"></script>
@@ -22,7 +23,8 @@ st.markdown(
       gtag('config', 'G-Y0TSDFY3E4');
     </script>
     """,
-    unsafe_allow_html=True
+    height=0,  # no visible output
+    width=0
 )
 
 # ----- Hero Banner -----
