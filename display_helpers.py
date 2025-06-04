@@ -251,7 +251,9 @@ def display_element_score_breakdown(result):
             f"<tr>"
             f"<td>{emoji} {elem}</td>"
             f"<td>{b['visible']}" + (f" ({b['visible_desc']})" if b.get('visible_desc') else "") + "</td>"
-            f"<td>{b['hidden']}" + (f" ({b['hidden_desc']})" if b.get('hidden_desc') else "") + "</td>"
+            f"<td>{b['hidden']}" + (
+                f" ({' + '.join(s.split()[0] for s in b['hidden_desc'].split(' + '))})" if b.get('hidden_desc') else ""
+            ) + "</td>"
             f"<td>{b['season']}</td>"
             f"<td>{b['dm']}</td>"
             f"<td><strong>{b['total']}</strong></td>"
