@@ -10,13 +10,6 @@ from display_helpers import display_pillars_table, display_element_star_meter
 # ----- Streamlit Page Config -----
 st.set_page_config(page_title="MyElement - BaZi Analyzer", page_icon="🌿", layout="centered")
 
-# ----- In-app Sidebar Analytics -----
-stats = analytics.stats()
-with st.sidebar:
-    st.write("**App Stats**")
-    st.write(f"👀 Unique Visitors: {stats['unique_users']}")
-    st.write(f"🕒 Pageviews: {stats['total_pageviews']}")
-
 # ----- Hero Banner -----
 st.markdown(
     """
