@@ -4,4 +4,3 @@ timezonefinder
 geopy
 openai
 pycountry
-streamlit-analytics
