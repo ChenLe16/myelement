@@ -1,3 +1,5 @@
+import re
+
 import streamlit as st
 import pycountry
 from geopy.geocoders import Nominatim
@@ -6,6 +8,15 @@ import datetime as dt
 from zoneinfo import ZoneInfo
 from bazi_calculator import calculate_bazi_with_solar_correction
 from display_helpers import display_pillars_table, display_element_star_meter, display_element_score_breakdown, display_time_info
+
+if "email_submitted" not in st.session_state:
+    st.session_state["email_submitted"] = False
+if "submitted_email" not in st.session_state:
+    st.session_state["submitted_email"] = ""
+
+def is_valid_email(email):
+    pattern = r"^[A-Za-z0-9\._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
+    return re.match(pattern, email.strip()) is not None
 
 # ----- Streamlit Page Config -----
 st.set_page_config(page_title="MyElement - BaZi Analyzer", page_icon="🌿", layout="centered")
@@ -96,6 +107,33 @@ if st.button("✨ Generate My Elemental Star Meter"):
 
                 display_time_info(result, timezone_str)
 
+                # --- PDF Email Request Section ---
+                st.markdown("---")
+                with st.form("email_form"):
+                    st.markdown(
+                        "<h4 style='text-align:left;'>Get Your Full PDF Report</h4>",
+                        unsafe_allow_html=True
+                    )
+                    email = st.text_input(
+                        "Enter your email to receive your personalized report and join our newsletter:",
+                        placeholder="you@email.com"
+                    ).strip()
+                    st.markdown(
+                        "<div style='text-align:center; color:#89acc0; font-size:0.98em;'>"
+                        "By submitting, you agree to receive your PDF result and occasional updates from us. You can unsubscribe at any time."
+                        "</div>",
+                        unsafe_allow_html=True
+                    )
+                    send_pdf = st.form_submit_button("Send to my email")
+                    if send_pdf:
+                        if email and is_valid_email(email):
+                            st.session_state["email_submitted"] = True
+                            st.session_state["submitted_email"] = email
+                        else:
+                            st.warning("Please enter a valid email address.")
+                if st.session_state.get("email_submitted"):
+                    st.success("Your report will be sent to your email soon!")
+                    st.info(f"Email submitted: **{st.session_state['submitted_email']}**")
     except Exception as e:
         st.error(f"❌ Something went wrong: {e}")
 
