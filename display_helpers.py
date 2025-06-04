@@ -184,3 +184,78 @@ def display_element_star_meter(result):
         table += f"<tr style='background-color:#23262c;'><td>{label}</td><td>{stars}</td></tr>"
     table += "</table>"
     st.markdown(table, unsafe_allow_html=True)
+
+
+# ---- Five Elements Scoring Breakdown Table ----
+def display_element_score_breakdown(result):
+    st.markdown(
+        "<h4 style='text-align:center;'>Five Elements Scoring Breakdown</h4>",
+        unsafe_allow_html=True,
+    )
+
+    breakdown = result["element_score_breakdown"]
+    element_order = ["Wood", "Fire", "Earth", "Metal", "Water"]
+    element_emojis = {
+        "Wood": "🌳",
+        "Fire": "🔥",
+        "Earth": "🪨",
+        "Metal": "🪙",
+        "Water": "💧",
+    }
+
+    st.markdown(
+        '''
+        <style>
+        .element-breakdown-table th, .element-breakdown-table td {
+            font-size: 1.09em !important;
+            padding: 7px 12px !important;
+            border: none;
+            text-align: center;
+        }
+        .element-breakdown-table {
+            width: 94% !important;
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 11px;
+            box-shadow: 0 1px 10px #23272e;
+            background: #23262c;
+        }
+        .element-breakdown-table th {
+            background: #21242a;
+            color: #ffe9b4 !important;
+        }
+        .element-breakdown-table tr {
+            background-color: #23262c;
+        }
+        </style>
+        ''',
+        unsafe_allow_html=True,
+    )
+
+    table = "<table class='element-breakdown-table'>"
+    table += (
+        "<tr>"
+        "<th>Element</th>"
+        "<th>Visible pts</th>"
+        "<th>Hidden pts</th>"
+        "<th>Season bonus</th>"
+        "<th>DM bonus</th>"
+        "<th>Total</th>"
+        "</tr>"
+    )
+
+    for elem in element_order:
+        b = breakdown[elem]
+        emoji = element_emojis.get(elem, "")
+        table += (
+            f"<tr>"
+            f"<td>{emoji} {elem}</td>"
+            f"<td>{b['visible']}" + (f" ({b['visible_desc']})" if b.get('visible_desc') else "") + "</td>"
+            f"<td>{b['hidden']}" + (f" ({b['hidden_desc']})" if b.get('hidden_desc') else "") + "</td>"
+            f"<td>{b['season']}</td>"
+            f"<td>{b['dm']}</td>"
+            f"<td><strong>{b['total']}</strong></td>"
+            f"</tr>"
+        )
+    table += "</table>"
+    st.markdown(table, unsafe_allow_html=True)

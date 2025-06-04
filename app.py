@@ -5,7 +5,7 @@ from timezonefinder import TimezoneFinder
 import datetime as dt
 from zoneinfo import ZoneInfo
 from bazi_calculator import calculate_bazi_with_solar_correction
-from display_helpers import display_pillars_table, display_element_star_meter
+from display_helpers import display_pillars_table, display_element_star_meter, display_element_score_breakdown
 
 # ----- Streamlit Page Config -----
 st.set_page_config(page_title="MyElement - BaZi Analyzer", page_icon="🌿", layout="centered")
@@ -82,7 +82,7 @@ if st.button("✨ Generate My Elemental Star Meter"):
 
                 st.markdown("---")
                 display_pillars_table(result)
-
+                display_element_score_breakdown(result)
                 st.markdown(("---"))
                 display_element_star_meter(result)
                 st.markdown("---")

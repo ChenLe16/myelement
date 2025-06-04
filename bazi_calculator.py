@@ -177,30 +177,43 @@ def judge_strength(day_stem, month_branch, vis_stems, vis_branches):
 # Five Elements Star Meter Calculation (new!)
 # ————————————————————————————————————————————————————
 def calculate_element_strengths(vis_stems, hidden_stems_per_pillar, month_branch, day_stem):
-    """Calculate the strength of all five elements."""
     elements = ["Wood", "Fire", "Earth", "Metal", "Water"]
     elem_score = {e: 0 for e in elements}
-
-    # Visible stems: 1 pt each
+    breakdown = {}
+    # Visible stems
+    vis_count = {e: 0 for e in elements}
+    vis_desc = {e: [] for e in elements}
     for s in vis_stems:
         e = STEM_ELEM[STEM.index(s)]
-        elem_score[e] += 1
-
-    # Hidden stems: 0.5 pt each
+        vis_count[e] += 1
+        vis_desc[e].append(s)
+    # Hidden stems
+    hid_count = {e: 0.0 for e in elements}
+    hid_desc = {e: [] for e in elements}
     for stem_list in hidden_stems_per_pillar:
         for s in stem_list:
             e = STEM_ELEM[STEM.index(s)]
-            elem_score[e] += 0.5
-
-    # Seasonal bonus
-    for e in elements:
-        elem_score[e] += SEASON_BONUS.get(month_branch, {}).get(e, 0)
-
-    # Day Master bonus
+            hid_count[e] += 0.5
+            hid_desc[e].append(f"{s} 0.5")
+    # Season
+    season_bonus = {e: SEASON_BONUS.get(month_branch, {}).get(e, 0) for e in elements}
+    # DM bonus
     DM_ELEM = STEM_ELEM[STEM.index(day_stem)]
-    elem_score[DM_ELEM] += 1
-
-    return elem_score
+    dm_bonus = {e: (1 if e == DM_ELEM else 0) for e in elements}
+    # Total & breakdown
+    for e in elements:
+        total = vis_count[e] + hid_count[e] + season_bonus[e] + dm_bonus[e]
+        breakdown[e] = {
+            "visible": vis_count[e],
+            "visible_desc": " + ".join(vis_desc[e]) if vis_desc[e] else "",
+            "hidden": hid_count[e],
+            "hidden_desc": " + ".join(hid_desc[e]) if hid_desc[e] else "",
+            "season": season_bonus[e],
+            "dm": dm_bonus[e],
+            "total": round(total, 1)
+        }
+        elem_score[e] = round(total, 1)
+    return elem_score, breakdown
 
 # ————————————————————————————————————————————————————
 # Main API Function
@@ -235,7 +248,7 @@ def calculate_bazi_with_solar_correction(dob, birth_time, local_longitude, utc_o
     )
 
     # NEW: calculate element strengths
-    element_strengths = calculate_element_strengths(
+    element_strengths, element_score_breakdown = calculate_element_strengths(
         vis_stems, hidden_stems_per_pillar, M[1], D[0]
     )
 
@@ -252,4 +265,5 @@ def calculate_bazi_with_solar_correction(dob, birth_time, local_longitude, utc_o
         "strength_score": raw,
         "hidden_stems": hidden_stems_per_pillar,
         "element_strengths": element_strengths,
+        "element_score_breakdown": element_score_breakdown,
     }
