@@ -1,7 +1,8 @@
-# Ignore Streamlit secrets
-.streamlit/secrets.toml
+# VS Code settings
+.vscode/
+.history/
 
-# Byte-compiled / cache files
+# Python cache
 __pycache__/
 *.py[cod]
 *.pyo
@@ -13,3 +14,10 @@ __pycache__/
 venv/
 env/
 .myelement-env/
+.myelement-env/
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# System folders
+.devcontainer/
