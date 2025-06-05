@@ -116,7 +116,7 @@ def display_pillars_table(result):
     st.markdown(table, unsafe_allow_html=True)
 
     # Add expander to show hidden stems details
-    with st.expander("Show details ▸"):
+    with st.expander("Show details (hidden stems)"):
         hidden_table = "<table style='width: 88%; margin-left: auto; margin-right: auto; border-collapse: collapse;'>"
         hidden_table += "<tr><th style='text-align:left; padding: 6px 12px;'>Pillar</th><th style='text-align:left; padding: 6px 12px;'>Hidden Stem(s)</th></tr>"
         for p in pillars:
@@ -148,31 +148,25 @@ def display_element_star_meter(result):
 
     def star_meter(score, color="#ffd700"):
         max_stars = 5
-        stars_html = f"<span style='font-size:1.09em; vertical-align:middle;'>"
-        if score == 0:
-            # Show '0 ★' in muted grey
-            stars_html = f"<span style='color:#a9b7c6; font-weight:600; font-size:1.09em;'>0 ★</span>"
-            return stars_html
-        n_full = int(score)
-        remainder = score - n_full
+        capped_score = min(score, max_stars)
+        n_full = int(capped_score)
+        remainder = capped_score - n_full
         n_half = 0
-        # If exactly 0.5, show as a filled star for clarity
-        if abs(score - 0.5) < 1e-8:
+        plus = " +" if score > max_stars else ""
+        if abs(capped_score - 0.5) < 1e-8:
             n_full = 0
             n_half = 1
         else:
             if remainder >= 0.5:
                 n_half = 1
-
-        # Filled stars
+        stars_html = "<span style='font-size:1.09em; vertical-align:middle;'>"
         stars_html += f"<span style='color:{color}; font-weight:600;'>★</span>" * n_full
-        # Half star logic: show filled star for 0.5, else empty star for other half (but per instructions only 0.5 is special)
         if n_half == 1:
             stars_html += f"<span style='color:{color}; font-weight:600;'>☆</span>"
-        # Faded stars for remainder to make total 5 stars
         n_faded = max_stars - n_full - n_half
-        stars_html += f"<span style='color:#555555;'>☆</span>" * n_faded
-        stars_html += "</span>"
+        if n_faded > 0:
+            stars_html += f"<span style='color:#555555;'>☆</span>" * n_faded
+        stars_html += f"{plus}</span>"
         return stars_html
 
     st.markdown("""
@@ -223,8 +217,6 @@ def display_element_star_meter(result):
         table += f"<tr style='background-color:#23262c;'><td>{label}</td><td>{stars}</td></tr>"
     table += "</table>"
     st.markdown(table, unsafe_allow_html=True)
-    st.markdown("<div class='star-meter-legend'>★ = 0.5 points</div>", unsafe_allow_html=True)
-
 
 # ---- Five Elements Scoring Breakdown Table ----
 def display_element_score_breakdown(result):
@@ -311,4 +303,54 @@ def display_time_info(result, timezone_str):
         f"<div><b>Timezone:</b> {timezone_str}</div>"
         f"</div>",
         unsafe_allow_html=True
+    )
+
+def display_hero_section():
+    st.markdown("""
+        <div style='display: flex; flex-direction: column; align-items: center; margin-bottom: 38px;'>
+            <div style='display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 13px; margin-bottom: 18px;'>
+                <span class='my-logo' style='font-weight: 600; font-size: 2.8rem; color: #00B079;'>ME</span>
+                <div class='my-title' style='font-size: 2.1rem; font-weight: 700; letter-spacing: 1px; color: #fff;'>MyElement</div>
+            </div>
+            <div class='hero-title' style='font-size: 2.1rem; font-weight: 700; text-align: center; color: #fff; margin-bottom: 12px;'>
+                Turn Birth Data into Actionable Self-Insights
+            </div>
+            <div class='hero-desc' style='text-align: center; font-size: 1.23rem; color: #B0B5BA; margin-bottom: 30px; max-width: 600px;'>
+                Our Five-Element engine converts your birth date and time into a bar-chart of strengths, gaps, and next-step tips—no sign-up, no data stored.
+            </div>
+            <div style='display: flex; justify-content: center; margin-top: 18px;'>
+                <a class='hero-btn' href='#element-form' style='padding: 0.5em 2.1em; font-size: 1.18rem; font-weight: 700; border-radius: 10px; background: #1DBF73; color: white; text-decoration: none; box-shadow: 0 2px 12px #1dbf7322; transition: background 0.2s, outline 0.2s;'>
+                    Run My Free Analysis
+                </a>
+            </div>
+        </div>
+        <style>
+        .hero-btn:hover, .hero-btn:focus {
+            background: #14975f !important;
+            outline: 2px solid #eafff6;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+def display_privacy_note():
+    st.markdown(
+        """
+        <div style='text-align:center; margin-top: 8px; margin-bottom: 14px;'>
+            <span style='font-size:0.99em; color:#a9b7c6;'>
+                <em>Your data is processed securely and never stored.</em>
+            </span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+def display_footer():
+    st.markdown(
+        """
+        <hr style="margin-top:30px; margin-bottom:10px; border:0; border-top:1px solid #333a44;">
+        <div style='text-align:center; color:#a9b7c6; font-size:0.99em; margin-bottom:8px;'>
+            &copy; 2025 MyElement. All rights reserved.
+        </div>
+        """,
+        unsafe_allow_html=True,
     )

@@ -1,44 +1,20 @@
 import streamlit as st
 import datetime as dt
-import re
 import pycountry
 from geopy.geocoders import Nominatim
 from timezonefinder import TimezoneFinder
 from zoneinfo import ZoneInfo
 from bazi_calculator import calculate_bazi_with_solar_correction
-from display_helpers import display_pillars_table, display_element_star_meter, display_element_score_breakdown, display_time_info
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-import json
+from display_helpers import (
+    display_pillars_table, display_element_star_meter, display_element_score_breakdown, display_time_info,
+    display_hero_section, display_footer, display_privacy_note
+)
+from gsheet_helpers import append_to_gsheet, is_valid_email
 
-# 1. CSS and landing section (palette, header, hero, CTA)
 st.set_page_config(page_title="MyElement | Discover Your Elemental Self", page_icon="🌿", layout="centered")
 
-st.markdown("""
-<div style='display: flex; flex-direction: column; align-items: center; margin-bottom: 38px;'>
-    <div style='display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 13px; margin-bottom: 18px;'>
-        <span class='my-logo' style='font-weight: 600; font-size: 2.8rem; color: #00B079;'>ME</span>
-        <div class='my-title' style='font-size: 2.1rem; font-weight: 700; letter-spacing: 1px; color: #fff;'>MyElement</div>
-    </div>
-    <div class='hero-title' style='font-size: 2.1rem; font-weight: 700; text-align: center; color: #fff; margin-bottom: 12px;'>
-        Turn Birth Data into Actionable Self-Insights
-    </div>
-    <div class='hero-desc' style='text-align: center; font-size: 1.23rem; color: #B0B5BA; margin-bottom: 30px; max-width: 600px;'>
-        Our Five-Element engine converts your birth date and time into a bar-chart of strengths, gaps, and next-step tips—no sign-up, no data stored.
-    </div>
-    <div style='display: flex; justify-content: center; margin-top: 18px;'>
-        <a class='hero-btn' href='#element-form' style='padding: 0.5em 2.1em; font-size: 1.18rem; font-weight: 700; border-radius: 10px; background: #1DBF73; color: white; text-decoration: none; box-shadow: 0 2px 12px #1dbf7322; transition: background 0.2s, outline 0.2s;'>
-            Run My Free Analysis
-        </a>
-    </div>
-</div>
-<style>
-.hero-btn:hover, .hero-btn:focus {
-    background: #14975f !important;
-    outline: 2px solid #eafff6;
-}
-</style>
-""", unsafe_allow_html=True)
+# Landing/Hero section
+display_hero_section()
 
 # Inject CSS for the submit button to match hero CTA
 st.markdown("""
@@ -88,31 +64,13 @@ with st.form("star_meter_form"):
     with col2:
         minute = st.selectbox("Minute (M)", list(range(0, 60)), index=0)
         
-    st.markdown(
-        "<div style='background: #274559; color: #eaf7fa; border-radius: 8px; padding: 13px 7px; text-align:center; margin-bottom:13px; font-size:1.09em;'>"
-        "Your birth details are private and never stored on our server."
-        "</div>",
-        unsafe_allow_html=True
-    )
+    display_privacy_note()
 
     col1, col2, col3 = st.columns([2, 3, 2])
     with col2:
         submit_star_meter = st.form_submit_button("✨ Generate My Elemental Star Meter")
    
 st.markdown("</div>", unsafe_allow_html=True)
-
-# --- Google Sheets integration helper ---
-def append_to_gsheet(data):
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds_dict = json.loads(st.secrets["google_service_account"])
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-    client = gspread.authorize(creds)
-    sheet = client.open("MyElement Leads").sheet1  # Adjust if needed
-    sheet.append_row(data)
-
-def is_valid_email(email):
-    pattern = r"^[A-Za-z0-9\._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
-    return re.match(pattern, email.strip()) is not None
 
 if "email_submitted" not in st.session_state:
     st.session_state["email_submitted"] = False
@@ -211,12 +169,4 @@ if "bazi_result" in st.session_state:
             st.warning("Please enter a valid email address.")
 
 # 6. Footer
-st.markdown(
-    """
-    <hr>
-    <div style='text-align:center; color: #a8b6b3; font-size:0.95em; margin-top:10px;'>
-    Made with ❤️ by MyElement • © 2025
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+display_footer()
