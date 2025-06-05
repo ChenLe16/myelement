@@ -1,93 +1,127 @@
+import streamlit as st
+import datetime as dt
 import re
-
-# --- Google Sheets Integration ---
+import pycountry
+from geopy.geocoders import Nominatim
+from timezonefinder import TimezoneFinder
+from zoneinfo import ZoneInfo
+from bazi_calculator import calculate_bazi_with_solar_correction
+from display_helpers import display_pillars_table, display_element_star_meter, display_element_score_breakdown, display_time_info
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import json
 
+# 1. CSS and landing section (palette, header, hero, CTA)
+st.set_page_config(page_title="MyElement | Discover Your Elemental Self", page_icon="🌿", layout="centered")
+
+st.markdown("""
+<div style='display: flex; flex-direction: column; align-items: center; margin-bottom: 38px;'>
+    <div style='display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 13px; margin-bottom: 18px;'>
+        <span class='my-logo' style='font-weight: 600; font-size: 2.8rem; color: #00B079;'>ME</span>
+        <div class='my-title' style='font-size: 2.1rem; font-weight: 700; letter-spacing: 1px; color: #fff;'>MyElement</div>
+    </div>
+    <div class='hero-title' style='font-size: 2.1rem; font-weight: 700; text-align: center; color: #fff; margin-bottom: 12px;'>
+        Turn Birth Data into Actionable Self-Insights
+    </div>
+    <div class='hero-desc' style='text-align: center; font-size: 1.23rem; color: #B0B5BA; margin-bottom: 30px; max-width: 600px;'>
+        Our Five-Element engine converts your birth date and time into a bar-chart of strengths, gaps, and next-step tips—no sign-up, no data stored.
+    </div>
+    <div style='display: flex; justify-content: center; margin-top: 18px;'>
+        <a class='hero-btn' href='#element-form' style='padding: 0.5em 2.1em; font-size: 1.18rem; font-weight: 700; border-radius: 10px; background: #1DBF73; color: white; text-decoration: none; box-shadow: 0 2px 12px #1dbf7322; transition: background 0.2s, outline 0.2s;'>
+            Run My Free Analysis
+        </a>
+    </div>
+</div>
+<style>
+.hero-btn:hover, .hero-btn:focus {
+    background: #14975f !important;
+    outline: 2px solid #eafff6;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# Inject CSS for the submit button to match hero CTA
+st.markdown("""
+<style>
+    div.stButton > button:first-child {
+        padding: 0.5em 2.1em;
+        font-size: 1.18rem;
+        font-weight: 700;
+        border-radius: 10px;
+        background: #1DBF73;
+        color: white;
+        box-shadow: 0 2px 12px #1dbf7322;
+        transition: background 0.2s, outline 0.2s;
+        border: none;
+        cursor: pointer;
+    }
+    div.stButton > button:first-child:hover, div.stButton > button:first-child:focus {
+        background: #14975f !important;
+        outline: 2px solid #eafff6;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# 2. Form Section Anchor
+st.markdown("<div id='element-form'></div>", unsafe_allow_html=True)
+
+# 3. Main Input Form (with card background) inside a st.form
+st.markdown("<div class='card'>", unsafe_allow_html=True)
+with st.form("star_meter_form"):
+    name = st.text_input("Name")
+    gender = st.selectbox("Gender", ["Male", "Female"])
+    country_list = sorted([c.name for c in pycountry.countries])
+    country = st.selectbox(
+        "Country of Birth",
+        country_list,
+        index=country_list.index("Malaysia")
+    )
+    dob = st.date_input(
+        "Date of Birth",
+        value=dt.date(1990, 1, 1),
+        min_value=dt.date(1900, 1, 1),
+        max_value=dt.date.today() + dt.timedelta(days=365*2)
+    )
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        hour = st.selectbox("Hour (H)", list(range(0, 24)), index=12)
+    with col2:
+        minute = st.selectbox("Minute (M)", list(range(0, 60)), index=0)
+        
+    st.markdown(
+        "<div style='background: #274559; color: #eaf7fa; border-radius: 8px; padding: 13px 7px; text-align:center; margin-bottom:13px; font-size:1.09em;'>"
+        "Your birth details are private and never stored on our server."
+        "</div>",
+        unsafe_allow_html=True
+    )
+
+    col1, col2, col3 = st.columns([2, 3, 2])
+    with col2:
+        submit_star_meter = st.form_submit_button("✨ Generate My Elemental Star Meter")
+   
+st.markdown("</div>", unsafe_allow_html=True)
+
+# --- Google Sheets integration helper ---
 def append_to_gsheet(data):
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     creds_dict = json.loads(st.secrets["google_service_account"])
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
     client = gspread.authorize(creds)
-    sheet = client.open("MyElement Leads").sheet1  # Change to your sheet name if needed
+    sheet = client.open("MyElement Leads").sheet1  # Adjust if needed
     sheet.append_row(data)
 
-import streamlit as st
-import pycountry
-from geopy.geocoders import Nominatim
-from timezonefinder import TimezoneFinder
-import datetime as dt
-from zoneinfo import ZoneInfo
-from bazi_calculator import calculate_bazi_with_solar_correction
-from display_helpers import display_pillars_table, display_element_star_meter, display_element_score_breakdown, display_time_info
+def is_valid_email(email):
+    pattern = r"^[A-Za-z0-9\._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
+    return re.match(pattern, email.strip()) is not None
 
 if "email_submitted" not in st.session_state:
     st.session_state["email_submitted"] = False
 if "submitted_email" not in st.session_state:
     st.session_state["submitted_email"] = ""
 
-def is_valid_email(email):
-    pattern = r"^[A-Za-z0-9\._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
-    return re.match(pattern, email.strip()) is not None
-
-# ----- Streamlit Page Config -----
-st.set_page_config(page_title="MyElement - BaZi Analyzer", page_icon="🌿", layout="centered")
-
-# ----- Hero Banner -----
-st.markdown(
-    """
-    <div style='background: linear-gradient(90deg, #b1f0dc 0%, #f2edc6 100%); border-radius:14px; padding: 30px 20px 16px 20px; margin-bottom:20px; box-shadow:0 2px 12px #ddebe7;'>
-        <h1 style='color: #20403c; margin-bottom: 0.5rem;'>🌿 MyElement</h1>
-        <div style='font-size: 1.2rem; color: #456c67; font-weight:500; margin-bottom:4px;'>Discover Your Elemental Personality with BaZi</div>
-        <img src="https://cdn-icons-png.flaticon.com/512/2601/2601236.png" width="66" style="margin-top:10px; margin-bottom:-32px;" />
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-# ----- Input Card -----
-st.markdown(
-    """
-    <div style='background-color: #f6fbf9; border-radius:14px; padding: 22px 18px 5px 18px; box-shadow: 0 1px 10px #e0edea; margin-bottom: 22px;'>
-    """,
-    unsafe_allow_html=True
-)
-name = st.text_input("Name")
-gender = st.selectbox("Gender", ["Male", "Female", "Other"])
-
-country_list = sorted([c.name for c in pycountry.countries])
-country = st.selectbox(
-    "Country of Birth",
-    country_list,
-    index=country_list.index("Malaysia")
-)
-
-dob = st.date_input(
-    "Date of Birth",
-    value=dt.date(1990, 1, 1),
-    min_value=dt.date(1900, 1, 1),
-    max_value=dt.date.today() + dt.timedelta(days=365*2)
-)
-col1, col2 = st.columns(2)
-with col1:
-    hour = st.selectbox("Hour (H)", list(range(0, 24)), index=12)
-with col2:
-    minute = st.selectbox("Minute (M)", list(range(0, 60)), index=0)
-birth_time = dt.time(hour, minute)
-
-st.markdown(
-    "<div style='background: #274559; color: #eaf7fa; border-radius: 8px; padding: 13px 7px; text-align:center; margin-bottom:13px; font-size:1.09em;'>"
-    "Your birth details are private and never stored on our server."
-    "</div>",
-    unsafe_allow_html=True
-)
-
-st.caption("Tip: Country is enough for most cases; city support coming soon!")
-st.markdown("</div>", unsafe_allow_html=True)
-
-# ----- Button and Results -----
-if st.button("✨ Generate My Elemental Star Meter"):
+# 4. Generate Button & BaZi Calculation triggered by form submit
+if 'submit_star_meter' in locals() and submit_star_meter:
+    birth_time = dt.time(hour, minute)
     try:
         geolocator = Nominatim(user_agent="my_bazi_app", timeout=5)
         tf = TimezoneFinder()
@@ -120,7 +154,7 @@ if st.button("✨ Generate My Elemental Star Meter"):
     except Exception as e:
         st.error(f"❌ Something went wrong: {e}")
 
-# ----- Results & Email Form: Always visible if session_state has result -----
+# 5. Results, Star Meter, Email form
 if "bazi_result" in st.session_state:
     st.markdown("---")
     display_pillars_table(st.session_state["bazi_result"])
@@ -142,7 +176,7 @@ if "bazi_result" in st.session_state:
             placeholder="you@email.com"
         ).strip()
         st.markdown(
-            "<div style='text-align:center; color:#89acc0; font-size:0.98em;'>"
+            "<div style='text-align:left; color:#89acc0; font-size:0.98em;'>"
             "By submitting, you agree to receive your PDF result and occasional updates from us. You can unsubscribe at any time."
             "</div>",
             unsafe_allow_html=True
@@ -176,7 +210,7 @@ if "bazi_result" in st.session_state:
         elif message == "warning":
             st.warning("Please enter a valid email address.")
 
-# ----- Footer -----
+# 6. Footer
 st.markdown(
     """
     <hr>
