@@ -11,7 +11,12 @@ from display_helpers import (
 )
 from gsheet_helpers import append_to_gsheet, is_valid_email
 
-st.set_page_config(page_title="MyElement | Discover Your Elemental Self", page_icon="🌿", layout="centered")
+st.set_page_config(
+    page_title="MyElement | Discover Your Elemental Self",
+    page_icon="🌿",
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
 
 # Landing/Hero section
 display_hero_section()
