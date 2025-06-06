@@ -102,15 +102,9 @@ if generate_clicked:
     if not name.strip():
         st.warning("Please enter your name before continuing.")
     else:
-        # # Save user inputs into session for later use
-        # st.session_state["pending_inputs"] = dict(
-        #     name=name, gender=gender, country=country,
-        #     dob=dob, hour=hour, minute=minute
-        # )
         st.session_state["awaiting_confirm"] = True
 
 # show confirmation UI when needed
-# if st.session_state.get("awaiting_confirm", False) and "bazi_result" not in st.session_state:
 if st.session_state["awaiting_confirm"]:
     st.warning(
         "Are you sure your birth time is accurate? "
