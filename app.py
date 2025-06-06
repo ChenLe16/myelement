@@ -145,90 +145,91 @@ if st.session_state["awaiting_confirm"]:
             st.error(f"❌ Something went wrong: {e}")
 
 # 5. Results, Star Meter, Email form
-st.markdown("---")
-display_pillars_table(st.session_state["bazi_result"])
-display_element_score_breakdown(st.session_state["bazi_result"])
-st.markdown("---")
-display_element_star_meter(st.session_state["bazi_result"])
-st.markdown("---")
-display_time_info(st.session_state["bazi_result"], st.session_state["timezone_str"])
+if "bazi_result" in st.session_state and st.session_state["bazi_result"]:
+    st.markdown("---")
+    display_pillars_table(st.session_state["bazi_result"])
+    display_element_score_breakdown(st.session_state["bazi_result"])
+    st.markdown("---")
+    display_element_star_meter(st.session_state["bazi_result"])
+    st.markdown("---")
+    display_time_info(st.session_state["bazi_result"], st.session_state["timezone_str"])
 
-# --- PDF Email Request Section ---
-st.markdown("---")
-with st.form("email_form"):
-    st.markdown(
-        "<h4 style='text-align:left;'>Get Your Full PDF Report</h4>",
-        unsafe_allow_html=True
-    )
-    email = st.text_input(
-        "Enter your email to receive your personalized report and join our newsletter:",
-        placeholder="you@email.com"
-    ).strip()
-    consent = st.checkbox(
-        "I allow MyElement to save my birth data and email so it can generate "
-        "and send my full PDF report. I can delete this data at any time.",
-        value=False
-    )
-    st.markdown(
-        "<div style='text-align:left; color:#89acc0; "
-        "font-size:0.98em;'>"
-        "Your detailed PDF is prepared by a human analyst and arrives by "
-        "<strong>email within 48 hours (Mon-Fri)</strong>. "
-        "We only store your data for that purpose."
-        "</div>",
-        unsafe_allow_html=True
-    )
-    send_pdf = st.form_submit_button(
-        "Send to my email",
-        disabled=st.session_state.get("email_submitted", False)
-    )
-    message = ""
-    if send_pdf:
-        if not consent:
-            message = "consent"
-        elif not is_valid_email(email):
-            message = "warning"
-        else:
-            timestamp = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            # Generate a unique key using email, dob, and birth_time
-            key_source = f"{email}-{st.session_state.get('dob').strftime('%Y-%m-%d')}-{st.session_state.get('birth_time').strftime('%H:%M')}"
-            key = hashlib.sha256(key_source.encode("utf-8")).hexdigest()
-            row = [
-                key,
-                timestamp,
-                st.session_state.get("name"),
-                email,
-                st.session_state.get("country"),
-                st.session_state.get("dob").strftime("%Y-%m-%d"),
-                st.session_state.get("birth_time").strftime("%H:%M"),
-                st.session_state.get("gender"),
-            ]
-            try:
-                result = append_to_gsheet(row)  # expected returns: "success" | "duplicate" | None
-                if result in (None, False, "duplicate"):
-                    # Row already exists – treat as duplicate
-                    st.session_state["email_submitted"] = True
-                    message = "duplicate"
-                else:
-                    st.session_state["email_submitted"] = True
-                    message = "success"
-            except Exception as e:
-                message = f"error:{e}"
-    if message == "success":
-        st.success(
-            "✅ Request received! Your personalised PDF will land in your inbox "
-            "within 48 hours. If you don’t see it, check spam or write us at "
-            "hello@myelement.app."
+    # --- PDF Email Request Section ---
+    st.markdown("---")
+    with st.form("email_form"):
+        st.markdown(
+            "<h4 style='text-align:left;'>Get Your Full PDF Report</h4>",
+            unsafe_allow_html=True
         )
-        st.info(f"Email submitted: **{email}**")
-    elif message == "duplicate":
-        st.info("Looks like we already have your request — your PDF is on its way!")
-    elif message.startswith("error:"):
-        st.error("Unable to log to Google Sheet: " + message[6:])
-    elif message == "warning":
-        st.warning("Please enter a valid email address.")
-    elif message == "consent":
-        st.warning("Please tick the consent box to let us store your details.")
+        email = st.text_input(
+            "Enter your email to receive your personalized report and join our newsletter:",
+            placeholder="you@email.com"
+        ).strip()
+        consent = st.checkbox(
+            "I allow MyElement to save my birth data and email so it can generate "
+            "and send my full PDF report. I can delete this data at any time.",
+            value=False
+        )
+        st.markdown(
+            "<div style='text-align:left; color:#89acc0; "
+            "font-size:0.98em;'>"
+            "Your detailed PDF is prepared by a human analyst and arrives by "
+            "<strong>email within 48 hours (Mon-Fri)</strong>. "
+            "We only store your data for that purpose."
+            "</div>",
+            unsafe_allow_html=True
+        )
+        send_pdf = st.form_submit_button(
+            "Send to my email",
+            disabled=st.session_state.get("email_submitted", False)
+        )
+        message = ""
+        if send_pdf:
+            if not consent:
+                message = "consent"
+            elif not is_valid_email(email):
+                message = "warning"
+            else:
+                timestamp = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                # Generate a unique key using email, dob, and birth_time
+                key_source = f"{email}-{st.session_state.get('dob').strftime('%Y-%m-%d')}-{st.session_state.get('birth_time').strftime('%H:%M')}"
+                key = hashlib.sha256(key_source.encode("utf-8")).hexdigest()
+                row = [
+                    key,
+                    timestamp,
+                    st.session_state.get("name"),
+                    email,
+                    st.session_state.get("country"),
+                    st.session_state.get("dob").strftime("%Y-%m-%d"),
+                    st.session_state.get("birth_time").strftime("%H:%M"),
+                    st.session_state.get("gender"),
+                ]
+                try:
+                    result = append_to_gsheet(row)  # expected returns: "success" | "duplicate" | None
+                    if result in (None, False, "duplicate"):
+                        # Row already exists – treat as duplicate
+                        st.session_state["email_submitted"] = True
+                        message = "duplicate"
+                    else:
+                        st.session_state["email_submitted"] = True
+                        message = "success"
+                except Exception as e:
+                    message = f"error:{e}"
+        if message == "success":
+            st.success(
+                "✅ Request received! Your personalised PDF will land in your inbox "
+                "within 48 hours. If you don’t see it, check spam or write us at "
+                "hello@myelement.app."
+            )
+            st.info(f"Email submitted: **{email}**")
+        elif message == "duplicate":
+            st.info("Looks like we already have your request — your PDF is on its way!")
+        elif message.startswith("error:"):
+            st.error("Unable to log to Google Sheet: " + message[6:])
+        elif message == "warning":
+            st.warning("Please enter a valid email address.")
+        elif message == "consent":
+            st.warning("Please tick the consent box to let us store your details.")
 
 # 6. Footer
 display_footer()
