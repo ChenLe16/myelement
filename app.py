@@ -85,38 +85,41 @@ if "submitted_email" not in st.session_state:
 
 # 4. Generate Button & BaZi Calculation triggered by form submit
 if 'submit_star_meter' in locals() and submit_star_meter:
-    birth_time = dt.time(hour, minute)
-    try:
-        geolocator = Nominatim(user_agent="my_bazi_app", timeout=5)
-        tf = TimezoneFinder()
-        location = geolocator.geocode(country)
-        if not location:
-            st.error("Country not found! Try a different spelling.")
-        else:
-            timezone_str = tf.timezone_at(lng=location.longitude, lat=location.latitude)
-            if not timezone_str:
-                st.error("Could not determine timezone for this country.")
+    if name.strip() == "":
+        st.warning("Please fill in your name before continuing.")
+    else:
+        birth_time = dt.time(hour, minute)
+        try:
+            geolocator = Nominatim(user_agent="my_bazi_app", timeout=5)
+            tf = TimezoneFinder()
+            location = geolocator.geocode(country)
+            if not location:
+                st.error("Country not found! Try a different spelling.")
             else:
-                local_dt = dt.datetime.combine(dob, birth_time)
-                try:
-                    local_dt = local_dt.replace(tzinfo=ZoneInfo(timezone_str))
-                    utc_offset = local_dt.utcoffset().total_seconds() / 3600
-                except Exception as e:
-                    st.error(f"Timezone error: {e}")
-                    utc_offset = 8  # fallback
+                timezone_str = tf.timezone_at(lng=location.longitude, lat=location.latitude)
+                if not timezone_str:
+                    st.error("Could not determine timezone for this country.")
+                else:
+                    local_dt = dt.datetime.combine(dob, birth_time)
+                    try:
+                        local_dt = local_dt.replace(tzinfo=ZoneInfo(timezone_str))
+                        utc_offset = local_dt.utcoffset().total_seconds() / 3600
+                    except Exception as e:
+                        st.error(f"Timezone error: {e}")
+                        utc_offset = 8  # fallback
 
-                result = calculate_bazi_with_solar_correction(
-                    dob, birth_time, location.longitude, utc_offset
-                )
-                st.session_state["bazi_result"] = result
-                st.session_state["timezone_str"] = timezone_str
-                st.session_state["name"] = name
-                st.session_state["gender"] = gender
-                st.session_state["country"] = country
-                st.session_state["dob"] = dob
-                st.session_state["birth_time"] = birth_time
-    except Exception as e:
-        st.error(f"❌ Something went wrong: {e}")
+                    result = calculate_bazi_with_solar_correction(
+                        dob, birth_time, location.longitude, utc_offset
+                    )
+                    st.session_state["bazi_result"] = result
+                    st.session_state["timezone_str"] = timezone_str
+                    st.session_state["name"] = name
+                    st.session_state["gender"] = gender
+                    st.session_state["country"] = country
+                    st.session_state["dob"] = dob
+                    st.session_state["birth_time"] = birth_time
+        except Exception as e:
+            st.error(f"❌ Something went wrong: {e}")
 
 # 5. Results, Star Meter, Email form
 if "bazi_result" in st.session_state:
