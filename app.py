@@ -138,16 +138,28 @@ if "bazi_result" in st.session_state:
             "Enter your email to receive your personalized report and join our newsletter:",
             placeholder="you@email.com"
         ).strip()
+        consent = st.checkbox(
+            "I allow MyElement to save my birth data and email so it can generate "
+            "and send my full PDF report. I can delete this data at any time.",
+            value=False
+        )
         st.markdown(
-            "<div style='text-align:left; color:#89acc0; font-size:0.98em;'>"
-            "By submitting, you agree to receive your PDF result and occasional updates from us. You can unsubscribe at any time."
+            "<div style='text-align:left; color:#89acc0; "
+            "font-size:0.98em;'>"
+            "Your detailed PDF is prepared by a human analyst and arrives by "
+            "<strong>email within 48 hours (Mon-Fri)</strong>. "
+            "We only store your data for that purpose."
             "</div>",
             unsafe_allow_html=True
         )
         send_pdf = st.form_submit_button("Send to my email")
         message = ""
         if send_pdf:
-            if is_valid_email(email):
+            if not consent:
+                message = "consent"
+            elif not is_valid_email(email):
+                message = "warning"
+            else:
                 timestamp = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 row = [
                     timestamp,
@@ -163,15 +175,19 @@ if "bazi_result" in st.session_state:
                     message = "success"
                 except Exception as e:
                     message = f"error:{e}"
-            else:
-                message = "warning"
         if message == "success":
-            st.success("✅ Row sent to Google Sheet!")
+            st.success(
+                "✅ Request received! Your personalised PDF will land in your inbox "
+                "within 48 hours. If you don’t see it, check spam or write us at "
+                "hello@myelement.app."
+            )
             st.info(f"Email submitted: **{email}**")
         elif message.startswith("error:"):
             st.error("Unable to log to Google Sheet: " + message[6:])
         elif message == "warning":
             st.warning("Please enter a valid email address.")
+        elif message == "consent":
+            st.warning("Please tick the consent box to let us store your details.")
 
 # 6. Footer
 display_footer()

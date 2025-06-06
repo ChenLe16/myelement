@@ -337,7 +337,7 @@ def display_privacy_note():
         """
         <div style='text-align:center; margin-top: 8px; margin-bottom: 14px;'>
             <span style='font-size:0.99em; color:#a9b7c6;'>
-                <em>Your data is processed securely and never stored.</em>
+                <em>All calculations run locally. We only store your details if you ask us to email the full PDF report.</em>
             </span>
         </div>
         """,
