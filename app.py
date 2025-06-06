@@ -69,12 +69,21 @@ with st.form("star_meter_form"):
         hour = st.selectbox("Hour (H)", list(range(0, 24)), index=12)
     with col2:
         minute = st.selectbox("Minute (M)", list(range(0, 60)), index=0)
-        
+
+    # Accuracy hint
+    st.markdown(
+        "<div style='text-align: center; color: #6c757d; font-size: 0.97em;'>"
+        "⏱ <b>Exact birth time matters.</b> Even a five‑minute difference can "
+        "shift the Hour Pillar and change your results."
+        "</div>",
+        unsafe_allow_html=True
+    )
+
     display_privacy_note()
 
     col1, col2, col3 = st.columns([2, 3, 2])
     with col2:
-        submit_star_meter = st.form_submit_button("✨ Generate My Elemental Star Meter")
+        generate_clicked = st.form_submit_button("✨ Generate My Elemental Star Meter")
    
 st.markdown("</div>", unsafe_allow_html=True)
 
@@ -83,11 +92,31 @@ if "email_submitted" not in st.session_state:
 if "submitted_email" not in st.session_state:
     st.session_state["submitted_email"] = ""
 
-# 4. Generate Button & BaZi Calculation triggered by form submit
-if 'submit_star_meter' in locals() and submit_star_meter:
-    if name.strip() == "":
-        st.warning("Please fill in your name before continuing.")
+if "awaiting_confirm" not in st.session_state:
+    st.session_state["awaiting_confirm"] = False
+if "pending_inputs" not in st.session_state:
+    st.session_state["pending_inputs"] = {}
+
+# ---- Handle Generate logic & confirmation ----
+if generate_clicked:
+    if not name.strip():
+        st.warning("Please enter your name before continuing.")
     else:
+        # # Save user inputs into session for later use
+        # st.session_state["pending_inputs"] = dict(
+        #     name=name, gender=gender, country=country,
+        #     dob=dob, hour=hour, minute=minute
+        # )
+        st.session_state["awaiting_confirm"] = True
+
+# show confirmation UI when needed
+# if st.session_state.get("awaiting_confirm", False) and "bazi_result" not in st.session_state:
+if st.session_state["awaiting_confirm"]:
+    st.warning(
+        "Are you sure your birth time is accurate? "
+        "Even a five‑minute difference can change your result."
+    )
+    if st.button("✔ Yes, my birth time is accurate — generate my result"):
         birth_time = dt.time(hour, minute)
         try:
             geolocator = Nominatim(user_agent="my_bazi_app", timeout=5)
@@ -122,7 +151,8 @@ if 'submit_star_meter' in locals() and submit_star_meter:
             st.error(f"❌ Something went wrong: {e}")
 
 # 5. Results, Star Meter, Email form
-if "bazi_result" in st.session_state:
+# if "bazi_result" in st.session_state:
+    # st.session_state["awaiting_confirm"] = False
     st.markdown("---")
     display_pillars_table(st.session_state["bazi_result"])
     display_element_score_breakdown(st.session_state["bazi_result"])
