@@ -31,4 +31,9 @@ def append_to_gsheet(data):
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
     client = gspread.authorize(creds)
     sheet = client.open("MyElement Leads").sheet1  # Adjust if needed
+    # Deduplication: Check if the key (data[0]) already exists in the sheet; if so, skip appending
+    key = data[0]
+    if sheet.findall(key):
+        return
     sheet.append_row(data)
+    return 'added'

@@ -4,6 +4,7 @@ import pycountry
 from geopy.geocoders import Nominatim
 from timezonefinder import TimezoneFinder
 from zoneinfo import ZoneInfo
+import hashlib
 from bazi_calculator import calculate_bazi_with_solar_correction
 from display_helpers import (
     display_pillars_table, display_element_star_meter, display_element_score_breakdown, display_time_info,
@@ -152,7 +153,10 @@ if "bazi_result" in st.session_state:
             "</div>",
             unsafe_allow_html=True
         )
-        send_pdf = st.form_submit_button("Send to my email")
+        send_pdf = st.form_submit_button(
+            "Send to my email",
+            disabled=st.session_state.get("email_submitted", False)
+        )
         message = ""
         if send_pdf:
             if not consent:
@@ -161,7 +165,11 @@ if "bazi_result" in st.session_state:
                 message = "warning"
             else:
                 timestamp = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                # Generate a unique key using email, dob, and birth_time
+                key_source = f"{email}-{st.session_state.get('dob').strftime('%Y-%m-%d')}-{st.session_state.get('birth_time').strftime('%H:%M')}"
+                key = hashlib.sha256(key_source.encode("utf-8")).hexdigest()
                 row = [
+                    key,
                     timestamp,
                     st.session_state.get("name"),
                     email,
@@ -171,8 +179,14 @@ if "bazi_result" in st.session_state:
                     st.session_state.get("gender"),
                 ]
                 try:
-                    append_to_gsheet(row)
-                    message = "success"
+                    result = append_to_gsheet(row)  # expected returns: "success" | "duplicate" | None
+                    if result in (None, False, "duplicate"):
+                        # Row already exists – treat as duplicate
+                        st.session_state["email_submitted"] = True
+                        message = "duplicate"
+                    else:
+                        st.session_state["email_submitted"] = True
+                        message = "success"
                 except Exception as e:
                     message = f"error:{e}"
         if message == "success":
@@ -182,6 +196,8 @@ if "bazi_result" in st.session_state:
                 "hello@myelement.app."
             )
             st.info(f"Email submitted: **{email}**")
+        elif message == "duplicate":
+            st.info("Looks like we already have your request — your PDF is on its way!")
         elif message.startswith("error:"):
             st.error("Unable to log to Google Sheet: " + message[6:])
         elif message == "warning":
