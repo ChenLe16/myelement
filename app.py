@@ -12,6 +12,42 @@ from display_helpers import (
 )
 from gsheet_helpers import append_to_gsheet, is_valid_email
 
+# ── Session helpers ───────────────────────────────────────────
+def _init_state():
+    """Ensure all the keys we use later exist in st.session_state."""
+    defaults = dict(
+        email_submitted=False,
+        submitted_email="",
+        awaiting_confirm=False,
+        pending_inputs={},
+        bazi_result=None,
+        timezone_str=""
+    )
+    for k, v in defaults.items():
+        st.session_state.setdefault(k, v)
+
+# ── Calc helper ───────────────────────────────────────────────
+def _compute_bazi_result(dob: dt.date, btime: dt.time, country: str):
+    """
+    Returns (result_dict, timezone_str) or (None, error_msg).
+    Handles geo lookup, timezone, solar‑correction BaZi calc.
+    """
+    try:
+        geolocator = Nominatim(user_agent="my_bazi_app", timeout=5)
+        tf = TimezoneFinder()
+        location = geolocator.geocode(country)
+        if not location:
+            return None, "Country not found."
+        tz_str = tf.timezone_at(lng=location.longitude, lat=location.latitude)
+        if not tz_str:
+            return None, "Could not determine timezone."
+        local_dt = dt.datetime.combine(dob, btime).replace(tzinfo=ZoneInfo(tz_str))
+        utc_off = local_dt.utcoffset().total_seconds() / 3600
+        result = calculate_bazi_with_solar_correction(dob, btime, location.longitude, utc_off)
+        return (result, tz_str)
+    except Exception as err:
+        return None, f"Error: {err}"
+
 st.set_page_config(
     page_title="MyElement | Discover Your Elemental Self",
     page_icon="🌿",
@@ -21,6 +57,9 @@ st.set_page_config(
 
 # Landing/Hero section
 display_hero_section()
+
+# Initialise session once per user
+_init_state()
 
 # Inject CSS for the submit button to match hero CTA
 st.markdown("""
@@ -87,16 +126,6 @@ with st.form("star_meter_form"):
    
 st.markdown("</div>", unsafe_allow_html=True)
 
-if "email_submitted" not in st.session_state:
-    st.session_state["email_submitted"] = False
-if "submitted_email" not in st.session_state:
-    st.session_state["submitted_email"] = ""
-
-if "awaiting_confirm" not in st.session_state:
-    st.session_state["awaiting_confirm"] = False
-if "pending_inputs" not in st.session_state:
-    st.session_state["pending_inputs"] = {}
-
 # ---- Handle Generate logic & confirmation ----
 if generate_clicked:
     if not name.strip():
@@ -112,37 +141,21 @@ if st.session_state["awaiting_confirm"]:
     )
     if st.button("✔ Yes, my birth time is accurate — generate my result"):
         birth_time = dt.time(hour, minute)
-        try:
-            geolocator = Nominatim(user_agent="my_bazi_app", timeout=5)
-            tf = TimezoneFinder()
-            location = geolocator.geocode(country)
-            if not location:
-                st.error("Country not found! Try a different spelling.")
-            else:
-                timezone_str = tf.timezone_at(lng=location.longitude, lat=location.latitude)
-                if not timezone_str:
-                    st.error("Could not determine timezone for this country.")
-                else:
-                    local_dt = dt.datetime.combine(dob, birth_time)
-                    try:
-                        local_dt = local_dt.replace(tzinfo=ZoneInfo(timezone_str))
-                        utc_offset = local_dt.utcoffset().total_seconds() / 3600
-                    except Exception as e:
-                        st.error(f"Timezone error: {e}")
-                        utc_offset = 8  # fallback
-
-                    result = calculate_bazi_with_solar_correction(
-                        dob, birth_time, location.longitude, utc_offset
-                    )
-                    st.session_state["bazi_result"] = result
-                    st.session_state["timezone_str"] = timezone_str
-                    st.session_state["name"] = name
-                    st.session_state["gender"] = gender
-                    st.session_state["country"] = country
-                    st.session_state["dob"] = dob
-                    st.session_state["birth_time"] = birth_time
-        except Exception as e:
-            st.error(f"❌ Something went wrong: {e}")
+        bazi, tz_or_err = _compute_bazi_result(dob, birth_time, country)
+        if bazi is None:
+            st.error(tz_or_err)
+        else:
+            st.session_state.update(
+                dict(
+                    bazi_result=bazi,
+                    timezone_str=tz_or_err,
+                    name=name,
+                    gender=gender,
+                    country=country,
+                    dob=dob,
+                    birth_time=birth_time
+                )
+            )
 
 # 5. Results, Star Meter, Email form
 if "bazi_result" in st.session_state and st.session_state["bazi_result"]:
@@ -221,7 +234,6 @@ if "bazi_result" in st.session_state and st.session_state["bazi_result"]:
                 "within 48 hours. If you don’t see it, check spam or write us at "
                 "hello@myelement.app."
             )
-            st.info(f"Email submitted: **{email}**")
         elif message == "duplicate":
             st.info("Looks like we already have your request — your PDF is on its way!")
         elif message.startswith("error:"):
