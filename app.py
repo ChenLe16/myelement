@@ -5,6 +5,93 @@ from geopy.geocoders import Nominatim
 from timezonefinder import TimezoneFinder
 from zoneinfo import ZoneInfo
 import hashlib
+
+# ── Identity mappings ───────────────────────────────────────
+stem_to_header = {
+    "甲": "The Resolute Oak Person",
+    "乙": "The Adaptive Willow Person",
+    "丙": "The Radiant Sun Person",
+    "丁": "The Enduring Ember Person",
+    "戊": "The Grounded Mountain Person",
+    "己": "The Cultivating Marble Person",
+    "庚": "The Strategic Sword Person",
+    "辛": "The Discerning Jewel Person",
+    "壬": "The Dynamic Wave Person",
+    "癸": "The Reflective Rain Person",
+}
+
+stem_to_traits = {
+    "甲": "Steady growth, long‑range vision; anchors big projects.",
+    "乙": "Flexible thinker; links ideas and people with ease.",
+    "丙": "Energises groups and sparks momentum.",
+    "丁": "Sustains warm focus; mentors and refines goals.",
+    "戊": "Reliable planner; sees the whole terrain before acting.",
+    "己": "Patient craftsman; turns rough ideas into polished results.",
+    "庚": "Decisive and direct—cuts through complexity to solutions.",
+    "辛": "Precise, value‑driven; elevates hidden quality.",
+    "壬": "Exploratory, big‑picture thinker driving new ventures.",
+    "癸": "Calm insight‑giver; nourishes teams with clarity.",
+}
+
+# --- Two-sentence takeaway mapping for each stem ---
+stem_to_takeaway = {
+    "甲": "Lean on your capacity for endurance when teams lose focus. Stay open to new methods so you don’t become rigid.",
+    "乙": "Your agility is a super-connector—use it to translate between specialists. Guard against spreading yourself too thin; pick one root project to deepen.",
+    "丙": "People mirror your enthusiasm, so set the tone deliberately. Schedule quiet “eclipse” time to keep from burning out.",
+    "丁": "Your steady glow excels in 1-to-1 guidance—cultivate mentorship roles. Beware of dimming when recognition is delayed; celebrate small wins.",
+    "戊": "Strategic patience lets you solve problems others rush past. Stay receptive to feedback so analysis doesn’t turn into immobility.",
+    "己": "Your eye for detail builds lasting value—own the refinement phase. Balance perfectionism with deadlines to keep momentum.",
+    "庚": "Teams rely on your clarity; wield it to unblock consensus. Temper rapid judgement with empathy to avoid unintended cuts.",
+    "辛": "You instinctively spot what’s precious—apply that to both tasks and people. Remember not everyone craves the same level of polish; choose battles.",
+    "壬": "Your breadth fuels innovation—map bold routes others don’t see. Anchor ideas with concrete milestones so they don’t dissipate.",
+    "癸": "Quiet observation lets you solve root issues others miss. Speak insights early; withholding too long can flood the project later.",
+}
+
+stem_to_color = {
+    "Wood":  "#2E8B57",
+    "Fire":  "#FF7518",
+    "Earth": "#C27C48",
+    "Metal": "#8E97A8",
+    "Water": "#007C8C",
+}
+
+stem_to_element = dict(zip(
+    "甲乙丙丁戊己庚辛壬癸",
+    ["Wood","Wood","Fire","Fire","Earth","Earth","Metal","Metal","Water","Water"]
+))
+
+stem_to_emoji = {
+    "甲": "🌳",  # Oak
+    "乙": "🌿",  # Willow
+    "丙": "🌞",  # Sun
+    "丁": "🔥",  # Ember
+    "戊": "⛰️",  # Mountain
+    "己": "🪨",  # Marble
+    "庚": "⚔️",  # Sword
+    "辛": "💎",  # Jewel
+    "壬": "🌊",  # Wave
+    "癸": "💧",  # Rain
+}
+
+# ── Helper: get the Day‑Master stem safely ───────────────────
+def get_day_stem(bazi_dict: dict) -> str:
+    """
+    Return the Heavenly‑stem character of the Day pillar
+    regardless of the dict shape returned by the calculator.
+    Accepted keys:
+      • "day_pillar": "壬寅"
+      • "day":        "壬寅"
+      • "pillars":    ["丁丑","庚戌","壬寅","戊申"]
+    Raises KeyError if none found.
+    """
+    if "day_pillar" in bazi_dict:
+        return bazi_dict["day_pillar"][0]
+    if "day" in bazi_dict:
+        return bazi_dict["day"][0]
+    if "pillars" in bazi_dict and len(bazi_dict["pillars"]) >= 3:
+        return bazi_dict["pillars"][2][0]
+    raise KeyError("Day pillar not found in BaZi result")
+
 from bazi_calculator import calculate_bazi_with_solar_correction
 from display_helpers import (
     display_pillars_table, display_element_star_meter, display_element_score_breakdown, display_time_info,
@@ -156,14 +243,92 @@ if st.session_state["awaiting_confirm"]:
                     birth_time=birth_time
                 )
             )
+            st.session_state["awaiting_confirm"] = False   # ⇦ hide banner
 
 # 5. Results, Star Meter, Email form
 if "bazi_result" in st.session_state and st.session_state["bazi_result"]:
     st.markdown("---")
+    # ---- Identity header ----
+    dm_stem = get_day_stem(st.session_state["bazi_result"])
+    header  = stem_to_header[dm_stem]
+    trait   = stem_to_traits[dm_stem]
+    elem    = stem_to_element[dm_stem]
+    color   = stem_to_color[elem]
+
+    emoji = stem_to_emoji.get(dm_stem, "")
+
+    st.markdown(
+        f"""
+        <div style='
+            text-align:center;
+            margin: 2.5em 0 2.1em 0;
+            padding: 0;
+        '>
+            <div style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            ">
+                <span style='
+                    font-size:3.2rem;
+                    filter: drop-shadow(0 4px 16px #000a);
+                    margin-bottom: 0.13em;
+                '>{emoji}</span>
+                <span style='
+                    display:inline-block;
+                    font-size:2.5rem;
+                    font-weight:900;
+                    letter-spacing:1.1px;
+                    color:{color};
+                    text-shadow: 0 4px 24px #000c;
+                    margin-bottom: 0.21em;
+                '>
+                    You are <span style="color:#fff;">{header}</span>
+                </span>
+            </div>
+            <div style='
+                font-size:1.22rem;
+                font-weight: 700;
+                color:#f6f8fc;
+                margin-top:0.40em;
+                margin-bottom:0.98em;
+                text-shadow: 0 2px 12px #222a;
+            '>
+                {trait}
+            </div>
+            <div style='
+                display: inline-block;
+                background: linear-gradient(90deg, #181818 40%, #33302d 100%);
+                color:#FFEDAF;
+                font-size:1.11rem;
+                font-style: italic;
+                font-weight:500;
+                border-radius: 10px;
+                box-shadow:0 3px 14px #0002;
+                padding: 18px 30px 14px 30px;
+                margin-top:0.6em;
+                line-height:1.66;
+                max-width: 670px;
+            '>
+                {stem_to_takeaway[dm_stem]}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
     display_pillars_table(st.session_state["bazi_result"])
     display_element_score_breakdown(st.session_state["bazi_result"])
     st.markdown("---")
     display_element_star_meter(st.session_state["bazi_result"])
+    st.markdown(
+        "<div style='color:#edc96d; background:rgba(64,44,0,0.08); text-align:center; font-size:1.03em; margin:12px 0 18px 0; border-radius:8px; padding:8px 10px 6px 10px;'>"
+        "<b>Note:</b> <em>Your Elemental Identity (Day Master) is not always your strongest star.</em>"
+        "</div>",
+        unsafe_allow_html=True
+    )
     st.markdown("---")
     display_time_info(st.session_state["bazi_result"], st.session_state["timezone_str"])
 
