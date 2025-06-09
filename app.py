@@ -6,71 +6,99 @@ from timezonefinder import TimezoneFinder
 from zoneinfo import ZoneInfo
 import hashlib
 
+# Shadow colour per element — used to keep text crisp on matching backgrounds
+ELEMENT_SHADOW = {
+    "Wood":  "0 2px 6px rgba(9,39,25,0.65)",
+    "Fire":  "0 2px 6px rgba(120,30,0,0.55)",
+    "Earth": "0 2px 6px rgba(64,32,8,0.55)",
+    "Metal": "0 2px 6px rgba(20,29,46,0.6)",
+    "Water": "0 3px 10px rgba(0,0,0,0.75)",
+}
+
 # ── Identity mappings ───────────────────────────────────────
-stem_to_header = {
-    "甲": "The Resolute Oak Person",
-    "乙": "The Adaptive Willow Person",
-    "丙": "The Radiant Sun Person",
-    "丁": "The Enduring Ember Person",
-    "戊": "The Grounded Mountain Person",
-    "己": "The Cultivating Marble Person",
-    "庚": "The Strategic Sword Person",
-    "辛": "The Discerning Jewel Person",
-    "壬": "The Dynamic Wave Person",
-    "癸": "The Reflective Rain Person",
-}
 
-stem_to_traits = {
-    "甲": "Steady growth, long‑range vision; anchors big projects.",
-    "乙": "Flexible thinker; links ideas and people with ease.",
-    "丙": "Energises groups and sparks momentum.",
-    "丁": "Sustains warm focus; mentors and refines goals.",
-    "戊": "Reliable planner; sees the whole terrain before acting.",
-    "己": "Patient craftsman; turns rough ideas into polished results.",
-    "庚": "Decisive and direct—cuts through complexity to solutions.",
-    "辛": "Precise, value‑driven; elevates hidden quality.",
-    "壬": "Exploratory, big‑picture thinker driving new ventures.",
-    "癸": "Calm insight‑giver; nourishes teams with clarity.",
-}
-
-# --- Two-sentence takeaway mapping for each stem ---
-stem_to_takeaway = {
-    "甲": "Lean on your capacity for endurance when teams lose focus. Stay open to new methods so you don’t become rigid.",
-    "乙": "Your agility is a super-connector—use it to translate between specialists. Guard against spreading yourself too thin; pick one root project to deepen.",
-    "丙": "People mirror your enthusiasm, so set the tone deliberately. Schedule quiet “eclipse” time to keep from burning out.",
-    "丁": "Your steady glow excels in 1-to-1 guidance—cultivate mentorship roles. Beware of dimming when recognition is delayed; celebrate small wins.",
-    "戊": "Strategic patience lets you solve problems others rush past. Stay receptive to feedback so analysis doesn’t turn into immobility.",
-    "己": "Your eye for detail builds lasting value—own the refinement phase. Balance perfectionism with deadlines to keep momentum.",
-    "庚": "Teams rely on your clarity; wield it to unblock consensus. Temper rapid judgement with empathy to avoid unintended cuts.",
-    "辛": "You instinctively spot what’s precious—apply that to both tasks and people. Remember not everyone craves the same level of polish; choose battles.",
-    "壬": "Your breadth fuels innovation—map bold routes others don’t see. Anchor ideas with concrete milestones so they don’t dissipate.",
-    "癸": "Quiet observation lets you solve root issues others miss. Speak insights early; withholding too long can flood the project later.",
-}
-
-stem_to_color = {
-    "Wood":  "#2E8B57",
-    "Fire":  "#FF7518",
-    "Earth": "#C27C48",
-    "Metal": "#8E97A8",
-    "Water": "#007C8C",
-}
-
-stem_to_element = dict(zip(
-    "甲乙丙丁戊己庚辛壬癸",
-    ["Wood","Wood","Fire","Fire","Earth","Earth","Metal","Metal","Water","Water"]
-))
-
-stem_to_emoji = {
-    "甲": "🌳",  # Oak
-    "乙": "🌿",  # Willow
-    "丙": "🌞",  # Sun
-    "丁": "🔥",  # Ember
-    "戊": "⛰️",  # Mountain
-    "己": "🪨",  # Marble
-    "庚": "⚔️",  # Sword
-    "辛": "💎",  # Jewel
-    "壬": "🌊",  # Wave
-    "癸": "💧",  # Rain
+# Unified dictionary for Day Master identities and attributes
+DAY_MASTER_IDENTITIES = {
+    "甲": {
+        "header": "The Resolute Oak Person",
+        "traits": "Steady growth, long‑range vision; anchors big projects.",
+        "takeaway": "Lean on your capacity for endurance when teams lose focus. Stay open to new methods so you don’t become rigid.",
+        "element": "Wood",
+        "color": "#2E8B57",
+        "emoji": "🌳",
+    },
+    "乙": {
+        "header": "The Adaptive Willow Person",
+        "traits": "Flexible thinker; links ideas and people with ease.",
+        "takeaway": "Your agility is a super-connector—use it to translate between specialists. Guard against spreading yourself too thin; pick one root project to deepen.",
+        "element": "Wood",
+        "color": "#2E8B57",
+        "emoji": "🌿",
+    },
+    "丙": {
+        "header": "The Radiant Sun Person",
+        "traits": "Energises groups and sparks momentum.",
+        "takeaway": "People mirror your enthusiasm, so set the tone deliberately. Schedule quiet “eclipse” time to keep from burning out.",
+        "element": "Fire",
+        "color": "#FF7518",
+        "emoji": "🌞",
+    },
+    "丁": {
+        "header": "The Enduring Ember Person",
+        "traits": "Sustains warm focus; mentors and refines goals.",
+        "takeaway": "Your steady glow excels in 1-to-1 guidance—cultivate mentorship roles. Beware of dimming when recognition is delayed; celebrate small wins.",
+        "element": "Fire",
+        "color": "#FF7518",
+        "emoji": "🔥",
+    },
+    "戊": {
+        "header": "The Grounded Mountain Person",
+        "traits": "Reliable planner; sees the whole terrain before acting.",
+        "takeaway": "Strategic patience lets you solve problems others rush past. Stay receptive to feedback so analysis doesn’t turn into immobility.",
+        "element": "Earth",
+        "color": "#C27C48",
+        "emoji": "⛰️",
+    },
+    "己": {
+        "header": "The Cultivating Marble Person",
+        "traits": "Patient craftsman; turns rough ideas into polished results.",
+        "takeaway": "Your eye for detail builds lasting value—own the refinement phase. Balance perfectionism with deadlines to keep momentum.",
+        "element": "Earth",
+        "color": "#C27C48",
+        "emoji": "🪨",
+    },
+    "庚": {
+        "header": "The Strategic Sword Person",
+        "traits": "Decisive and direct—cuts through complexity to solutions.",
+        "takeaway": "Teams rely on your clarity; wield it to unblock consensus. Temper rapid judgement with empathy to avoid unintended cuts.",
+        "element": "Metal",
+        "color": "#8E97A8",
+        "emoji": "⚔️",
+    },
+    "辛": {
+        "header": "The Discerning Jewel Person",
+        "traits": "Precise, value‑driven; elevates hidden quality.",
+        "takeaway": "You instinctively spot what’s precious—apply that to both tasks and people. Remember not everyone craves the same level of polish; choose battles.",
+        "element": "Metal",
+        "color": "#8E97A8",
+        "emoji": "💎",
+    },
+    "壬": {
+        "header": "The Dynamic Wave Person",
+        "traits": "Exploratory, big‑picture thinker driving new ventures.",
+        "takeaway": "Your breadth fuels innovation—map bold routes others don’t see. Anchor ideas with concrete milestones so they don’t dissipate.",
+        "element": "Water",
+        "color": "#5CD1E8",
+        "emoji": "🌊",
+    },
+    "癸": {
+        "header": "The Reflective Rain Person",
+        "traits": "Calm insight‑giver; nourishes teams with clarity.",
+        "takeaway": "Quiet observation lets you solve root issues others miss. Speak insights early; withholding too long can flood the project later.",
+        "element": "Water",
+        "color": "#5CD1E8",
+        "emoji": "💧",
+    },
 }
 
 # ── Helper: get the Day‑Master stem safely ───────────────────
@@ -250,75 +278,118 @@ if "bazi_result" in st.session_state and st.session_state["bazi_result"]:
     st.markdown("---")
     # ---- Identity header ----
     dm_stem = get_day_stem(st.session_state["bazi_result"])
-    header  = stem_to_header[dm_stem]
-    trait   = stem_to_traits[dm_stem]
-    elem    = stem_to_element[dm_stem]
-    color   = stem_to_color[elem]
+    dm_info = DAY_MASTER_IDENTITIES[dm_stem]
+    header  = dm_info["header"]
+    trait   = dm_info["traits"]
+    elem    = dm_info["element"]
+    color   = dm_info["color"]
+    emoji   = dm_info["emoji"]
 
-    emoji = stem_to_emoji.get(dm_stem, "")
-
+    # ── Elemental Identity Spotlight Section ──────────────
+    bg_gradient = {
+        "Wood":  "linear-gradient(135deg, #134e3a 0%, #2E8B57 100%)",
+        "Fire":  "linear-gradient(135deg, #ff7518 0%, #ffb347 100%)",
+        "Earth": "linear-gradient(135deg, #c27c48 0%, #ffe0b2 100%)",
+        "Metal": "linear-gradient(135deg, #8e97a8 0%, #1d2431 100%)",
+        "Water": "linear-gradient(135deg, #11998e 0%, #003344 100%)",
+    }
+  
     st.markdown(
-        f"""
+    f"""
+    <div style='
+        background: radial-gradient(circle at center 40%, rgba(255,255,255,0.12) 0%, rgba(0,0,0,0) 60%), 
+                    {bg_gradient[elem]};
+        border-radius: 28px;
+        margin: 3.3em 0 2em 0;
+        box-shadow: 0 8px 38px #0007,
+                    inset 0 0 0 0.5px #ffffff44,
+                    inset 0 1.5px 0.5px #fff2;
+        padding: 52px 12px 40px 12px;
+        position: relative;
+        border: 1.5px solid #fff3;
+    '>
         <div style='
-            text-align:center;
-            margin: 2.5em 0 2.1em 0;
-            padding: 0;
+            font-size: 1.25rem;
+            letter-spacing: 2.5px;
+            color: #fff7e8;
+            text-align: center;
+            margin-bottom: 0.65em;
+            text-shadow: 0 1px 12px #0025;
+            font-weight: 800;
+            text-transform: uppercase;
         '>
-            <div style="
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-            ">
-                <span style='
-                    font-size:3.2rem;
-                    filter: drop-shadow(0 4px 16px #000a);
-                    margin-bottom: 0.13em;
-                '>{emoji}</span>
-                <span style='
-                    display:inline-block;
-                    font-size:2.5rem;
-                    font-weight:900;
-                    letter-spacing:1.1px;
-                    color:{color};
-                    text-shadow: 0 4px 24px #000c;
-                    margin-bottom: 0.21em;
-                '>
-                    You are <span style="color:#fff;">{header}</span>
-                </span>
-            </div>
-            <div style='
-                font-size:1.22rem;
-                font-weight: 700;
-                color:#f6f8fc;
-                margin-top:0.40em;
-                margin-bottom:0.98em;
-                text-shadow: 0 2px 12px #222a;
-            '>
-                {trait}
-            </div>
-            <div style='
-                display: inline-block;
-                background: linear-gradient(90deg, #181818 40%, #33302d 100%);
-                color:#FFEDAF;
-                font-size:1.11rem;
-                font-style: italic;
-                font-weight:500;
-                border-radius: 10px;
-                box-shadow:0 3px 14px #0002;
-                padding: 18px 30px 14px 30px;
-                margin-top:0.6em;
-                line-height:1.66;
-                max-width: 670px;
-            '>
-                {stem_to_takeaway[dm_stem]}
-            </div>
+            IDENTITY SPOTLIGHT
         </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
+        <span style='
+            display: block;
+            text-align: center;
+            font-size: 6.5rem;
+            margin-bottom: 0.08em;
+            filter: drop-shadow(0 8px 38px #0009) brightness(0.90);
+            line-height: 1;
+        '>
+            {emoji}
+        </span>
+        <div style='
+            font-size:2.68rem;
+            font-weight:900;
+            letter-spacing:1px;
+            margin-bottom: 0.11em;
+            margin-top: 0.04em;
+            text-align: center;
+        '>
+            <span style='
+                color:#fff;
+                text-shadow:
+                    0 1.5px 10px #0052,
+                    0 1.5px 0px #fff9;
+                font-weight:900;
+            '>You are </span>
+            <span style='
+                color:{color};
+                text-shadow: 0 1px 3px rgba(0,0,0,.35), {ELEMENT_SHADOW[elem]};
+                font-weight:900;
+                letter-spacing:1px;
+                transition: color 0.4s;
+            '>{header}</span>
+        </div>
+        <div style='
+            font-size:1.45rem;
+            color:#FFEFD3;
+            letter-spacing:0.5px;
+            font-weight: 600;
+            margin-top:0.66em;
+            margin-bottom: 1.25em;
+            line-height:1.56;
+            text-shadow: 0 2px 12px #0028;
+            max-width: 650px;
+            margin-left:auto;
+            margin-right:auto;
+            text-align: center;
+        '>
+            {trait}
+        </div>
+        <div style='
+            font-size:1.13rem;
+            color:#FFF3C4;
+            font-style:italic;
+            background:rgba(10,32,44,0.80);
+            border-radius:12px;
+            border: 1.5px solid #1DE1FC44;
+            box-shadow:0 3px 26px #0008;
+            margin: 0.9em auto 0.78em auto;
+            padding: 14px 18px;
+            max-width: 640px;
+            line-height: 1.66;
+            text-align: center;
+        '>
+            {dm_info["takeaway"]}
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+   
     display_pillars_table(st.session_state["bazi_result"])
     display_element_score_breakdown(st.session_state["bazi_result"])
     st.markdown("---")
