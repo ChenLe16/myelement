@@ -4,6 +4,8 @@ from google.oauth2.service_account import Credentials
 from oauth2client.service_account import ServiceAccountCredentials
 import json
 import re
+import hashlib
+import datetime as dt
 
 # (Utility for checking email)
 def is_valid_email(email):
@@ -37,3 +39,7 @@ def append_to_gsheet(data):
         return
     sheet.append_row(data)
     return 'added'
+
+def make_unique_key(email, dob, birth_time, kind="SIMPLE"):
+    key_source = f"{email}-{dob.strftime('%Y-%m-%d')}-{birth_time.strftime('%H:%M')}-{kind}"
+    return hashlib.sha256(key_source.encode("utf-8")).hexdigest()

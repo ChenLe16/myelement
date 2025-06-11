@@ -1,5 +1,8 @@
 import datetime as dt
 import math
+from geopy.geocoders import Nominatim
+from timezonefinder import TimezoneFinder
+from zoneinfo import ZoneInfo
 
 # ————————————————————————————————————————————————————
 # Constants and Mappings
@@ -267,3 +270,42 @@ def calculate_bazi_with_solar_correction(dob, birth_time, local_longitude, utc_o
         "element_strengths": element_strengths,
         "element_score_breakdown": element_score_breakdown,
     }
+
+def compute_bazi_result(dob: dt.date, btime: dt.time, country: str):
+    """
+    Returns (result_dict, timezone_str) or (None, error_msg).
+    Handles geo lookup, timezone, solar‑correction BaZi calc.
+    """
+    try:
+        geolocator = Nominatim(user_agent="my_bazi_app", timeout=5)
+        tf = TimezoneFinder()
+        location = geolocator.geocode(country)
+        if not location:
+            return None, "Country not found."
+        tz_str = tf.timezone_at(lng=location.longitude, lat=location.latitude)
+        if not tz_str:
+            return None, "Could not determine timezone."
+        local_dt = dt.datetime.combine(dob, btime).replace(tzinfo=ZoneInfo(tz_str))
+        utc_off = local_dt.utcoffset().total_seconds() / 3600
+        result = calculate_bazi_with_solar_correction(dob, btime, location.longitude, utc_off)
+        return (result, tz_str)
+    except Exception as err:
+        return None, f"Error: {err}"
+    
+def get_day_stem(bazi_dict: dict) -> str:
+    """
+    Return the Heavenly‑stem character of the Day pillar
+    regardless of the dict shape returned by the calculator.
+    Accepted keys:
+      • "day_pillar": "壬寅"
+      • "day":        "壬寅"
+      • "pillars":    ["丁丑","庚戌","壬寅","戊申"]
+    Raises KeyError if none found.
+    """
+    if "day_pillar" in bazi_dict:
+        return bazi_dict["day_pillar"][0]
+    if "day" in bazi_dict:
+        return bazi_dict["day"][0]
+    if "pillars" in bazi_dict and len(bazi_dict["pillars"]) >= 3:
+        return bazi_dict["pillars"][2][0]
+    raise KeyError("Day pillar not found in BaZi result")
