@@ -164,7 +164,7 @@ def _compute_bazi_result(dob: dt.date, btime: dt.time, country: str):
         return None, f"Error: {err}"
 
 st.set_page_config(
-    page_title="MyElement | Discover Your Elemental Self",
+    page_title="MyElement",
     page_icon=":star:",
     layout="centered",
     initial_sidebar_state="collapsed"
