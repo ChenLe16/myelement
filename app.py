@@ -165,7 +165,7 @@ def _compute_bazi_result(dob: dt.date, btime: dt.time, country: str):
 
 st.set_page_config(
     page_title="MyElement | Discover Your Elemental Self",
-    page_icon="🌿",
+    page_icon=":star:",
     layout="centered",
     initial_sidebar_state="collapsed"
 )
@@ -400,7 +400,33 @@ if "bazi_result" in st.session_state and st.session_state["bazi_result"]:
         "</div>",
         unsafe_allow_html=True
     )
+
     st.markdown("---")
+
+    # ── Streamlit-native paywall card for MyElement Blueprint ──  
+    product_name = "MyElement Blueprint"
+    stripe_checkout = "https://buy.stripe.com/YOUR_PAYMENT_LINK"  # TODO: replace with your live Stripe link
+    product_preview_image = "assets/blueprint_mock.png"
+
+    with st.container():
+        cols = st.columns([2, 1])
+        with cols[0]:
+            st.subheader(
+                f"{product_name}",
+                help="6-page PDF report: core Five-Element analysis, chart visuals, guidance, and custom advice."
+            )
+            st.markdown(
+                "- 6-page Blueprint PDF — core Five-Element analysis, chart visuals, and easy guidance.\n"
+                "- Career & relationship advice for your profile.\n"
+                "- Custom growth recommendations for balance and strengths.\n"
+                "- Delivered straight to your inbox."
+            )
+            st.link_button("Get my Blueprint ➔", url=stripe_checkout, use_container_width=True)
+        with cols[1]:
+            st.image(product_preview_image, use_container_width=True)
+
+    st.markdown("---")
+
     display_time_info(st.session_state["bazi_result"], st.session_state["timezone_str"])
 
     # --- PDF Email Request Section ---
