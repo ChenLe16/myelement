@@ -401,6 +401,7 @@ if "bazi_result" in st.session_state and st.session_state["bazi_result"]:
         unsafe_allow_html=True
     )
 
+
     st.markdown("---")
 
     # ── Streamlit-native paywall card for MyElement Blueprint ──  
@@ -421,7 +422,16 @@ if "bazi_result" in st.session_state and st.session_state["bazi_result"]:
                 "- Custom growth recommendations for balance and strengths.\n"
                 "- Delivered straight to your inbox."
             )
-            st.link_button("Get my Blueprint ➔", url=stripe_checkout, use_container_width=True)
+            st.markdown(
+                "<div style='margin: 0.75em 0 0.85em 0; font-size:1.07rem; color:#24cc80; "
+                "background:rgba(25,60,40,0.13); border-radius:7px; display:inline-block; "
+                "padding:5px 16px 5px 9px; font-weight:700;'>"
+                "🛡️ 30-Day Money-Back Guarantee"
+                "</div>",
+                unsafe_allow_html=True
+            )
+            # Streamlit standard link_button, no custom HTML/CSS wrapper
+            st.link_button("Get my Blueprint ➔", url=stripe_checkout)
         with cols[1]:
             st.image(product_preview_image, use_container_width=True)
 
