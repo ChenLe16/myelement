@@ -393,74 +393,168 @@ if "bazi_result" in st.session_state and st.session_state["bazi_result"]:
     display_pillars_table(st.session_state["bazi_result"])
     display_element_score_breakdown(st.session_state["bazi_result"])
     st.markdown("---")
-    display_element_star_meter(st.session_state["bazi_result"])
+    display_element_star_meter(
+        st.session_state["bazi_result"],
+        identity_element=dm_info["element"]
+    )
     st.markdown(
         "<div style='color:#edc96d; background:rgba(64,44,0,0.08); text-align:center; font-size:1.03em; margin:12px 0 18px 0; border-radius:8px; padding:8px 10px 6px 10px;'>"
-        "<b>Note:</b> <em>Your Elemental Identity (Day Master) is not always your strongest star.</em>"
+        "<b>Note:</b> <em>Your Elemental Identity (🌟) is not always your strongest star.</em>"
         "</div>",
         unsafe_allow_html=True
     )
 
 
+
     st.markdown("---")
 
-    # ── Streamlit-native paywall card for MyElement Blueprint ──  
+    # --- Paywall: Dual-row layout with image + split bullet points ---
     product_name = "MyElement Blueprint"
     stripe_checkout = "https://buy.stripe.com/YOUR_PAYMENT_LINK"  # TODO: replace with your live Stripe link
     product_preview_image = "assets/blueprint_mock.png"
+    product_pdf_cover = "assets/pdf_cover.png"
+    product_pdf_content = "assets/pdf_content.png"
+
+    # PATCH: Paywall confirmation logic (replace link_button section)
+    if "paywall_confirm" not in st.session_state:
+        st.session_state["paywall_confirm"] = False
+    if "show_paywall_popup" not in st.session_state:
+        st.session_state["show_paywall_popup"] = False
+
+    # Bulletpoints
+    left_bullets = [
+        "6-page personalised PDF  — identity snapshot, full colour star-meter, and chart visuals.",
+        "Specifically crafted - non-superstitious.",
+        "Action toolkit — four element-matched habits plus Quick Growth Tips you can start today.",
+        "30-day money-back guarantee — full refund if you’re not delighted."
+    ]
+    right_bullets = [
+        "Career playbook — best-fit roles, ideal work styles, and pitfalls to avoid.",
+        "Relationship roadmap — loyalty strengths, conflict triggers, and partner matching by element.",
+        "Final personalised advice + life motto—a memorable one-liner to keep you on track.",
+        "Secure Stripe checkout — one-time RM 29, no hidden fees or subscriptions."
+    ]
+
+    st.header(
+        f"{product_name}",
+        help="6-page PDF report: core Five-Element analysis, chart visuals, guidance, and custom advice."
+    )
 
     with st.container():
-        cols = st.columns([2, 1])
-        with cols[0]:
+        # First row: bullets left, image right
+        row1_left, row1_right = st.columns([1.5, 1])
+        with row1_left:
             st.subheader(
-                f"{product_name}",
-                help="6-page PDF report: core Five-Element analysis, chart visuals, guidance, and custom advice."
+                "What You Get"
             )
             st.markdown(
-                "- 6-page Blueprint PDF — core Five-Element analysis, chart visuals, and easy guidance.\n"
-                "- Career & relationship advice for your profile.\n"
-                "- Custom growth recommendations for balance and strengths.\n"
-                "- Delivered straight to your inbox."
+                "\n".join([f"- {item}" for item in left_bullets])
+            )
+        with row1_right:
+            st.image(product_pdf_cover, use_container_width=True)
+
+        # Second row: image left, bullets right
+        row2_left, row2_right = st.columns([1, 1.5])
+        with row2_left:
+            st.image(product_pdf_content, use_container_width=True)
+        with row2_right:
+            st.subheader(
+                "Why It Matters"
             )
             st.markdown(
-                "<div style='margin: 0.75em 0 0.85em 0; font-size:1.07rem; color:#24cc80; "
-                "background:rgba(25,60,40,0.13); border-radius:7px; display:inline-block; "
-                "padding:5px 16px 5px 9px; font-weight:700;'>"
-                "🛡️ 30-Day Money-Back Guarantee"
-                "</div>",
-                unsafe_allow_html=True
+                "\n".join([f"- {item}" for item in right_bullets])
             )
-            # Streamlit standard link_button, no custom HTML/CSS wrapper
-            st.link_button("Get my Blueprint ➔", url=stripe_checkout)
-        with cols[1]:
-            st.image(product_preview_image, use_container_width=True)
+
+        # 30-day money-back guarantee
+        st.markdown(
+            "<div style='margin: 0.8em 0 1.1em 0; font-size:1.07rem; color:#24cc80; "
+            "background:rgba(25,60,40,0.13); border-radius:7px; display:inline-block; "
+            "padding:5px 16px 5px 9px; font-weight:700;'>"
+            "🛡 30-Day Guarantee · Secure payment"
+            "</div>",
+            unsafe_allow_html=True
+        )
+
+        # PAYWALL EMAIL FIELD & CTA
+        paywall_email = st.text_input(
+            "Email for delivery (required):",
+            value=st.session_state.get("paywall_email", ""),
+            key="paywall_email"
+        ).strip()
+        paywall_btn_disabled = not (paywall_email and is_valid_email(paywall_email))
+
+        if not st.session_state["paywall_confirm"]:
+            if st.button("RM 29 · Get My Blueprint →", disabled=paywall_btn_disabled):
+                if not paywall_email or not is_valid_email(paywall_email):
+                    st.warning("Please enter a valid email address before proceeding.")
+                else:
+                    st.session_state["show_paywall_popup"] = True
+
+            if st.session_state.get("show_paywall_popup", False):
+                st.warning(
+                    "Are you sure your birth data above is correct? "
+                    "This info will be used for your personalized report."
+                )
+                if st.button("✔ Yes, proceed to payment"):
+                    st.session_state["paywall_confirm"] = True
+                    st.session_state["show_paywall_popup"] = False
+
+                    # Log this as a "Full" prospect to Google Sheet (with key in first column, FULL in last)
+                    key_source = f"{paywall_email}-{st.session_state.get('dob').strftime('%Y-%m-%d')}-{st.session_state.get('birth_time').strftime('%H:%M')}-FULL"
+                    key = hashlib.sha256(key_source.encode("utf-8")).hexdigest()
+                    paywall_row = [
+                        key,
+                        dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        st.session_state.get("name"),
+                        paywall_email,
+                        st.session_state.get("country"),
+                        st.session_state.get("dob").strftime("%Y-%m-%d") if st.session_state.get("dob") else "",
+                        st.session_state.get("birth_time").strftime("%H:%M") if st.session_state.get("birth_time") else "",
+                        st.session_state.get("gender"),
+                        "FULL"
+                    ]
+                    try:
+                        append_to_gsheet(paywall_row)
+                        st.info("Your upgrade request was logged!")
+                    except Exception as e:
+                        st.warning(f"Failed to log prospect to Google Sheet: {e}")
+
+        if st.session_state["paywall_confirm"]:
+            st.success("✅ Confirmed! [Proceed to payment](%s)" % stripe_checkout)
+            st.markdown("**Your provided details:**")
+            st.json({
+                "Name": st.session_state.get("name"),
+                "Email": paywall_email,
+                "Gender": st.session_state.get("gender"),
+                "Country": st.session_state.get("country"),
+                "DOB": str(st.session_state.get("dob")),
+                "Time": str(st.session_state.get("birth_time"))
+            })
 
     st.markdown("---")
 
     display_time_info(st.session_state["bazi_result"], st.session_state["timezone_str"])
 
-    # --- PDF Email Request Section ---
+    # --- PDF Email Snapshot Request Section ---
     st.markdown("---")
     with st.form("email_form"):
         st.markdown(
-            "<h4 style='text-align:left;'>Get Your Full PDF Report</h4>",
+            "<h4 style='text-align:left;'>Get Your Free Blueprint Snapshot</h4>",
             unsafe_allow_html=True
         )
         email = st.text_input(
-            "Enter your email to receive your personalized report and join our newsletter:",
+            "Enter your email to receive your free snapshot and join our newsletter:",
             placeholder="you@email.com"
         ).strip()
         consent = st.checkbox(
             "I allow MyElement to save my birth data and email so it can generate "
-            "and send my full PDF report. I can delete this data at any time.",
+            "and send my free PDF snapshot. I can delete this data at any time.",
             value=False
         )
         st.markdown(
-            "<div style='text-align:left; color:#89acc0; "
-            "font-size:0.98em;'>"
-            "Your detailed PDF is prepared by a human analyst and arrives by "
-            "<strong>email within 48 hours (Mon-Fri)</strong>. "
-            "We only store your data for that purpose."
+            "<div style='text-align:left; color:#89acc0; font-size:0.98em;'>"
+            "If you’d like the complete 6-page Elemental Blueprint, just click the <b>Get My Blueprint</b> button above—"
+            "it’s right on this page!"
             "</div>",
             unsafe_allow_html=True
         )
@@ -477,7 +571,7 @@ if "bazi_result" in st.session_state and st.session_state["bazi_result"]:
             else:
                 timestamp = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 # Generate a unique key using email, dob, and birth_time
-                key_source = f"{email}-{st.session_state.get('dob').strftime('%Y-%m-%d')}-{st.session_state.get('birth_time').strftime('%H:%M')}"
+                key_source = f"{email}-{st.session_state.get('dob').strftime('%Y-%m-%d')}-{st.session_state.get('birth_time').strftime('%H:%M')}-SIMPLE"
                 key = hashlib.sha256(key_source.encode("utf-8")).hexdigest()
                 row = [
                     key,
@@ -488,6 +582,7 @@ if "bazi_result" in st.session_state and st.session_state["bazi_result"]:
                     st.session_state.get("dob").strftime("%Y-%m-%d"),
                     st.session_state.get("birth_time").strftime("%H:%M"),
                     st.session_state.get("gender"),
+                    "SIMPLE"
                 ]
                 try:
                     result = append_to_gsheet(row)  # expected returns: "success" | "duplicate" | None
@@ -502,12 +597,12 @@ if "bazi_result" in st.session_state and st.session_state["bazi_result"]:
                     message = f"error:{e}"
         if message == "success":
             st.success(
-                "✅ Request received! Your personalised PDF will land in your inbox "
+                "✅ Request received! Your personalised PDF snapshot will land in your inbox "
                 "within 48 hours. If you don’t see it, check spam or write us at "
-                "hello@myelement.app."
+                "myelement@gmail.com."
             )
         elif message == "duplicate":
-            st.info("Looks like we already have your request — your PDF is on its way!")
+            st.info("Looks like we already have your request — your PDF snapshot is on its way!")
         elif message.startswith("error:"):
             st.error("Unable to log to Google Sheet: " + message[6:])
         elif message == "warning":

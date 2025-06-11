@@ -130,7 +130,7 @@ def display_pillars_table(result):
         hidden_table += "</table>"
         st.markdown(hidden_table, unsafe_allow_html=True)
 
-def display_element_star_meter(result):
+def display_element_star_meter(result, identity_element=None):
     # Center the title
     st.markdown("<h4 style='text-align:center;'>Five Elements Star Meter</h4>", unsafe_allow_html=True)
 
@@ -178,7 +178,7 @@ def display_element_star_meter(result):
         border: none;
     }
     .star-meter-table-dark {
-        width: 66% !important;
+        width: 80% !important;
         margin-left: auto;
         margin-right: auto;
         border-radius: 11px;
@@ -209,12 +209,27 @@ def display_element_star_meter(result):
     </style>
     """, unsafe_allow_html=True)
 
+    def get_strength_label(score):
+        if score >= 4.0:
+            return "Very Strong"
+        elif score >= 3.0:
+            return "Strong"
+        elif score >= 2.0:
+            return "Balanced"
+        elif score >= 1.0:
+            return "Weak"
+        else:
+            return "Very Weak"
+
     table = "<table class='star-meter-table-dark'>"
-    table += "<tr><th>Element</th><th>Star Meter</th></tr>"
+    table += "<tr><th>Element</th><th>Star Meter</th><th>Strength</th></tr>"
     for elem, val in element_strengths.items():
         label = f"{element_emojis.get(elem, '')}&nbsp;<span style='color:{element_colors[elem]}; font-weight:700'>{elem}</span>"
+        if identity_element and elem == identity_element:
+            label = f"{label} 🌟"
         stars = star_meter(val, color=element_colors[elem])
-        table += f"<tr style='background-color:#23262c;'><td>{label}</td><td>{stars}</td></tr>"
+        label_strength = get_strength_label(val)
+        table += f"<tr style='background-color:#23262c;'><td>{label}</td><td>{stars}</td><td>{label_strength}</td></tr>"
     table += "</table>"
     st.markdown(table, unsafe_allow_html=True)
 
