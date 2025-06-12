@@ -1,8 +1,111 @@
 import streamlit as st
 import pandas as pd
 import datetime as dt
+import pycountry
 from bazi_constants import BG_GRADIENT, ELEMENT_SHADOW
 from gsheet_helpers import append_to_gsheet, is_valid_email, make_unique_key
+
+def display_custom_css():
+    st.markdown("""
+    <style>
+        div.stButton > button:first-child {
+            padding: 0.5em 2.1em;
+            font-size: 1.18rem;
+            font-weight: 700;
+            border-radius: 10px;
+            background: #1DBF73;
+            color: white;
+            box-shadow: 0 2px 12px #1dbf7322;
+            transition: background 0.2s, outline 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        div.stButton > button:first-child:hover, div.stButton > button:first-child:focus {
+            background: #14975f !important;
+            outline: 2px solid #eafff6;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+def display_hero_section():
+    st.markdown("""
+        <div style='display: flex; flex-direction: column; align-items: center; margin-bottom: 38px;'>
+            <div style='display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 13px; margin-bottom: 18px;'>
+                <span class='my-logo' style='font-weight: 600; font-size: 2.8rem; color: #00B079;'>ME</span>
+                <div class='my-title' style='font-size: 2.1rem; font-weight: 700; letter-spacing: 1px; color: #fff;'>MyElement</div>
+            </div>
+            <div class='hero-title' style='font-size: 2.1rem; font-weight: 700; text-align: center; color: #fff; margin-bottom: 12px;'>
+                Turn Birth Data into Actionable Self-Insights
+            </div>
+            <div class='hero-desc' style='text-align: center; font-size: 1.23rem; color: #B0B5BA; margin-bottom: 30px; max-width: 600px;'>
+                Our Five-Element engine converts your birth date and time into a bar-chart of strengths, gaps, and next-step tips—no sign-up, no data stored.
+            </div>
+            <div style='display: flex; justify-content: center; margin-top: 18px;'>
+                <a class='hero-btn' href='#element-form' style='padding: 0.5em 2.1em; font-size: 1.18rem; font-weight: 700; border-radius: 10px; background: #1DBF73; color: white; text-decoration: none; box-shadow: 0 2px 12px #1dbf7322; transition: background 0.2s, outline 0.2s;'>
+                    Run My Free Analysis
+                </a>
+            </div>
+        </div>
+        <style>
+        .hero-btn:hover, .hero-btn:focus {
+            background: #14975f !important;
+            outline: 2px solid #eafff6;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+def display_main_input_form():
+    with st.form("star_meter_form"):
+        name = st.text_input("Name")
+        gender = st.selectbox("Gender", ["Male", "Female"])
+        country_list = sorted([c.name for c in pycountry.countries])
+        country = st.selectbox(
+            "Country of Birth",
+            country_list,
+            index=country_list.index("Malaysia")
+        )
+        dob = st.date_input(
+            "Date of Birth",
+            value=dt.date(1990, 1, 1),
+            min_value=dt.date(1900, 1, 1),
+            max_value=dt.date.today() + dt.timedelta(days=365*2)
+        )
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            hour = st.selectbox("Hour (H)", list(range(0, 24)), index=12)
+        with col2:
+            minute = st.selectbox("Minute (M)", list(range(0, 60)), index=0)
+
+        st.warning(
+            "⏱ **Exact birth time matters.** Even a five‑minute difference can change your results."
+        )
+
+        display_privacy_note()
+
+        col1, col2, col3 = st.columns([2, 3, 2])
+        with col2:
+            generate_clicked = st.form_submit_button("✨ Generate My Elemental Star Meter")
+    
+    # Return all input values and the button state
+    return name, gender, country, dob, hour, minute, generate_clicked
+
+def display_user_summary(name, gender, country, dob, birth_time):
+    st.markdown(
+        f"""
+        <div style='background-color:rgba(220,220,230,0.08); border-radius:12px; padding:16px 22px; margin-bottom:16px; text-align:center;'>
+            <span style='font-weight:600; font-size:1.04em;'>Name:</span> {name}
+            &nbsp; | &nbsp;
+            <span style='font-weight:600; font-size:1.04em;'>Gender:</span> {gender}
+            &nbsp; | &nbsp;
+            <span style='font-weight:600; font-size:1.04em;'>Country:</span> {country}
+            <br>
+            <span style='font-weight:600; font-size:1.04em;'>Date of Birth:</span> {dob}
+            &nbsp; | &nbsp;
+            <span style='font-weight:600; font-size:1.04em;'>Birth Time:</span> {birth_time}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 def display_identity_card(dm_info):
     # ---- Identity header ----
@@ -131,12 +234,6 @@ def display_pillars_table(result):
     </div>
     """, unsafe_allow_html=True)
 
-    pillar_emojis = {
-        "Year": "🗓️",
-        "Month": "🌙",
-        "Day": "☀️",
-        "Hour": "⏰"
-    }
     pillars = [
         {"label": "Year",  "stem": result['year'][0],  "branch": result['year'][1],  "hidden": result['hidden_stems'][0]},
         {"label": "Month", "stem": result['month'][0], "branch": result['month'][1], "hidden": result['hidden_stems'][1]},
@@ -340,6 +437,13 @@ def display_element_star_meter(result, identity_element=None):
     table += "</table>"
     st.markdown(table, unsafe_allow_html=True)
 
+    st.markdown(
+        "<div style='color:#edc96d; background:rgba(64,44,0,0.08); text-align:center; font-size:1.03em; margin:12px 0 18px 0; border-radius:8px; padding:8px 10px 6px 10px;'>"
+        "<b>Note:</b> <em>Your Elemental Identity (🌟) is not always your strongest star.</em>"
+        "</div>",
+        unsafe_allow_html=True
+    )
+
 # ---- Five Elements Scoring Breakdown Table ----
 def display_element_score_breakdown(result):
     with st.expander("See how we calculate (advanced)"):
@@ -427,33 +531,6 @@ def display_time_info(result, timezone_str):
         unsafe_allow_html=True
     )
 
-def display_hero_section():
-    st.markdown("""
-        <div style='display: flex; flex-direction: column; align-items: center; margin-bottom: 38px;'>
-            <div style='display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 13px; margin-bottom: 18px;'>
-                <span class='my-logo' style='font-weight: 600; font-size: 2.8rem; color: #00B079;'>ME</span>
-                <div class='my-title' style='font-size: 2.1rem; font-weight: 700; letter-spacing: 1px; color: #fff;'>MyElement</div>
-            </div>
-            <div class='hero-title' style='font-size: 2.1rem; font-weight: 700; text-align: center; color: #fff; margin-bottom: 12px;'>
-                Turn Birth Data into Actionable Self-Insights
-            </div>
-            <div class='hero-desc' style='text-align: center; font-size: 1.23rem; color: #B0B5BA; margin-bottom: 30px; max-width: 600px;'>
-                Our Five-Element engine converts your birth date and time into a bar-chart of strengths, gaps, and next-step tips—no sign-up, no data stored.
-            </div>
-            <div style='display: flex; justify-content: center; margin-top: 18px;'>
-                <a class='hero-btn' href='#element-form' style='padding: 0.5em 2.1em; font-size: 1.18rem; font-weight: 700; border-radius: 10px; background: #1DBF73; color: white; text-decoration: none; box-shadow: 0 2px 12px #1dbf7322; transition: background 0.2s, outline 0.2s;'>
-                    Run My Free Analysis
-                </a>
-            </div>
-        </div>
-        <style>
-        .hero-btn:hover, .hero-btn:focus {
-            background: #14975f !important;
-            outline: 2px solid #eafff6;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-
 def display_privacy_note():
     st.markdown(
         """
@@ -461,17 +538,6 @@ def display_privacy_note():
             <span style='font-size:0.99em; color:#a9b7c6;'>
                 <em>All calculations run locally. We only store your details if you ask us to email the full PDF report.</em>
             </span>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-def display_footer():
-    st.markdown(
-        """
-        <hr style="margin-top:30px; margin-bottom:10px; border:0; border-top:1px solid #333a44;">
-        <div style='text-align:center; color:#a9b7c6; font-size:0.99em; margin-bottom:8px;'>
-            &copy; 2025 MyElement. All rights reserved.
         </div>
         """,
         unsafe_allow_html=True,
@@ -638,3 +704,17 @@ def display_pdf_request_form(state_dict):
             st.warning("Please enter a valid email address.")
         elif message == "consent":
             st.warning("Please tick the consent box to let us store your details.")
+
+def display_footer():
+    st.markdown(
+        """
+        <hr style="margin-top:30px; margin-bottom:10px; border:0; border-top:1px solid #333a44;">
+        <div style='text-align:center; color:#a9b7c6; font-size:0.99em; margin-bottom:8px;'>
+            &copy; 2025 MyElement. All rights reserved.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+def section_divider():
+    st.markdown("---")
