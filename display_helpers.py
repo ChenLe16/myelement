@@ -661,7 +661,7 @@ def display_paywall_card(
             st.markdown("\n".join([f"- {item}" for item in right_bullets]))
 
         st.markdown(
-            "<div style='margin: 0.8em 0 1.1em 0; font-size:1.07rem; color:#24cc80; "
+            "<div style='margin: 0.8em 0 1.1em 0; font-size:1.75rem; color:#24cc80; "
             "background:rgba(25,60,40,0.13); border-radius:7px; display:inline-block; "
             "padding:5px 16px 5px 9px; font-weight:700;'>"
             "🛡 30-Day Guarantee · Secure payment"

@@ -92,8 +92,13 @@ if "bazi_result" in st.session_state and st.session_state["bazi_result"]:
     dm_info = DAY_MASTER_IDENTITIES[dm_stem]
     
     display_identity_card(dm_info)   
-    display_pillars_table(st.session_state["bazi_result"])
-    display_element_score_breakdown(st.session_state["bazi_result"])
+    # Short disclaimer – personality is broader than any chart
+    st.caption(
+        "🔍 **Disclaimer:** Your Elemental chart is a powerful lens, but it can’t capture every life influence. "
+        "Family, culture, choices, and experiences all shape who you are today—treat this blueprint as a guide, not a verdict."
+    )
+    # display_pillars_table(st.session_state["bazi_result"])
+    # display_element_score_breakdown(st.session_state["bazi_result"])
 
     section_divider()
     
