@@ -1,3 +1,65 @@
+import datetime as dt
+# ————————————————————————————————————————————————————
+# Constants and Mappings
+# ————————————————————————————————————————————————————
+STEM   = "甲乙丙丁戊己庚辛壬癸"
+BRANCH = "子丑寅卯辰巳午未申酉戌亥"
+JIA_ZI = [STEM[i % 10] + BRANCH[i % 12] for i in range(60)]
+ORD_EPOCH = dt.date(1899, 12, 22).toordinal()        # 甲子日
+
+# Stem/branch to element
+STEM_ELEM   = ["Wood","Wood","Fire","Fire","Earth",
+               "Earth","Metal","Metal","Water","Water"]
+BRANCH_ELEM = ["Water","Earth","Wood","Wood","Earth","Fire",
+               "Fire","Earth","Metal","Metal","Earth","Water"]
+
+# Earthly Branch hidden stems
+BRANCH_HIDDEN = {
+    "子": ["癸"],
+    "丑": ["己", "癸", "辛"],
+    "寅": ["甲", "丙", "戊"],
+    "卯": ["乙"],
+    "辰": ["戊", "乙", "癸"],
+    "巳": ["丙", "庚", "戊"],
+    "午": ["丁", "己"],
+    "未": ["己", "丁", "乙"],
+    "申": ["庚", "壬", "戊"],
+    "酉": ["辛"],
+    "戌": ["戊", "辛", "丁"],
+    "亥": ["壬", "甲"],
+}
+
+# Seasonal bonus per month branch
+SEASON_BONUS = {
+    "寅":{"Wood":2,"Fire":1,"Earth":0,"Metal":-1,"Water":-2},
+    "卯":{"Wood":2,"Fire":1,"Earth":0,"Metal":-1,"Water":-2},
+    "辰":{"Wood":1,"Fire":0,"Earth":1,"Metal":0,"Water":-1},
+    "巳":{"Fire":2,"Earth":1,"Wood":0,"Metal":-1,"Water":-2},
+    "午":{"Fire":2,"Earth":1,"Wood":0,"Metal":-1,"Water":-2},
+    "未":{"Earth":1,"Fire":1,"Wood":0,"Metal":0,"Water":-1},
+    "申":{"Metal":2,"Water":1,"Earth":0,"Wood":-1,"Fire":-1},
+    "酉":{"Metal":2,"Water":1,"Earth":0,"Wood":-1,"Fire":-1},
+    "戌":{"Earth":1,"Metal":1,"Fire":0,"Wood":-1,"Water":0},
+    "亥":{"Water":2,"Wood":1,"Earth":-1,"Fire":-2,"Metal":0},
+    "子":{"Water":2,"Metal":0,"Earth":-1,"Fire":-2,"Wood":0},
+    "丑":{"Earth":1,"Metal":1,"Water":0,"Wood":-1,"Fire":0},
+}
+
+# --- Shared constants for element emojis and colors ---
+ELEMENT_EMOJIS = {
+    "Wood": "🌳",
+    "Fire": "🔥",
+    "Earth": "🪨",
+    "Metal": "⚔️",
+    "Water": "💧",
+}
+ELEMENT_COLORS = {
+    "Wood": "#58a862",
+    "Fire": "#f25f3a",
+    "Earth": "#c1915b",
+    "Metal": "#d1b24a",
+    "Water": "#378fcf",
+}
 
 # Shadow colour per element — used to keep text crisp on matching backgrounds
 ELEMENT_SHADOW = {

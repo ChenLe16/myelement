@@ -1,11 +1,16 @@
 import streamlit as st
-import pandas as pd
 import datetime as dt
 import pycountry
-from bazi_constants import BG_GRADIENT, ELEMENT_SHADOW
+from bazi_constants import ELEMENT_EMOJIS, ELEMENT_COLORS, BG_GRADIENT, ELEMENT_SHADOW
 from gsheet_helpers import append_to_gsheet, is_valid_email, make_unique_key
 
 def display_custom_css():
+    """
+    Injects custom CSS styles for Streamlit buttons to enhance appearance and interactivity.
+
+    Returns:
+        None
+    """
     st.markdown("""
     <style>
         div.stButton > button:first-child {
@@ -28,6 +33,12 @@ def display_custom_css():
     """, unsafe_allow_html=True)
 
 def display_hero_section():
+    """
+    Displays the hero section at the top of the page, including the app name, title, description, and call-to-action button.
+
+    Returns:
+        None
+    """
     st.markdown("""
         <div style='display: flex; flex-direction: column; align-items: center; margin-bottom: 38px;'>
             <div style='display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 13px; margin-bottom: 18px;'>
@@ -55,6 +66,12 @@ def display_hero_section():
         """, unsafe_allow_html=True)
 
 def display_main_input_form():
+    """
+    Displays the main input form for the user to enter their name, gender, country of birth, date of birth, and birth time.
+
+    Returns:
+        tuple: (name (str), gender (str), country (str), dob (date), hour (int), minute (int), generate_clicked (bool))
+    """
     with st.form("star_meter_form"):
         name = st.text_input("Name")
         gender = st.selectbox("Gender", ["Male", "Female"])
@@ -89,7 +106,20 @@ def display_main_input_form():
     # Return all input values and the button state
     return name, gender, country, dob, hour, minute, generate_clicked
 
-def display_user_summary(name, gender, country, dob, birth_time):
+def display_user_summary(name: str, gender: str, country: str, dob, birth_time) -> None:
+    """
+    Displays a summary card of the user's input information at the top of the results section.
+
+    Args:
+        name (str): The user's name.
+        gender (str): The user's gender.
+        country (str): The user's country of birth.
+        dob (date): The user's date of birth.
+        birth_time (time): The user's birth time.
+
+    Returns:
+        None
+    """
     st.markdown(
         f"""
         <div style='background-color:rgba(220,220,230,0.08); border-radius:12px; padding:16px 22px; margin-bottom:16px; text-align:center;'>
@@ -107,7 +137,16 @@ def display_user_summary(name, gender, country, dob, birth_time):
         unsafe_allow_html=True
     )
 
-def display_identity_card(dm_info):
+def display_identity_card(dm_info: dict) -> None:
+    """
+    Displays the Identity Spotlight card, highlighting the user's Day Master, key traits, and main takeaway.
+
+    Args:
+        dm_info (dict): Dictionary containing identity header, traits, element, color, emoji, and takeaway.
+
+    Returns:
+        None
+    """
     # ---- Identity header ----
     header  = dm_info["header"]
     trait   = dm_info["traits"]
@@ -211,7 +250,16 @@ def display_identity_card(dm_info):
         unsafe_allow_html=True
     )
 
-def display_pillars_table(result):
+def display_pillars_table(result: dict) -> None:
+    """
+    Displays the Four Pillars Table, showing Heavenly Stems and Earthly Branches for each pillar, and the Day Master strength verdict.
+
+    Args:
+        result (dict): Dictionary containing pillar information and strength verdict.
+
+    Returns:
+        None
+    """
     # Centered, matching-width title
     st.markdown("""
     <div style='
@@ -334,21 +382,21 @@ def display_pillars_table(result):
         hidden_table += "</table>"
         st.markdown(hidden_table, unsafe_allow_html=True)
 
-def display_element_star_meter(result, identity_element=None):
+def display_element_star_meter(result: dict, identity_element: str = None) -> None:
+    """
+    Displays the Five Elements Star Meter, showing star ratings and strength labels for each element.
+
+    Args:
+        result (dict): Dictionary containing element strengths.
+        identity_element (str, optional): The user's Day Master element for highlighting.
+
+    Returns:
+        None
+    """
     # Center the title
     st.markdown("<h4 style='text-align:center;'>Five Elements Star Meter</h4>", unsafe_allow_html=True)
 
     element_strengths = result['element_strengths']
-    element_emojis = {
-        "Wood": "🌳", "Fire": "🔥", "Earth": "🪨", "Metal": "🪙", "Water": "💧"
-    }
-    element_colors = {
-        "Wood": "#58a862",
-        "Fire": "#f25f3a",
-        "Earth": "#c1915b",
-        "Metal": "#d1b24a",
-        "Water": "#378fcf",
-    }
 
     def star_meter(score, color="#ffd700"):
         max_stars = 5
@@ -428,10 +476,10 @@ def display_element_star_meter(result, identity_element=None):
     table = "<table class='star-meter-table-dark'>"
     table += "<tr><th>Element</th><th>Star Meter</th><th>Strength</th></tr>"
     for elem, val in element_strengths.items():
-        label = f"{element_emojis.get(elem, '')}&nbsp;<span style='color:{element_colors[elem]}; font-weight:700'>{elem}</span>"
+        label = f"{ELEMENT_EMOJIS.get(elem, '')}&nbsp;<span style='color:{ELEMENT_COLORS[elem]}; font-weight:700'>{elem}</span>"
         if identity_element and elem == identity_element:
             label = f"{label} 🌟"
-        stars = star_meter(val, color=element_colors[elem])
+        stars = star_meter(val, color=ELEMENT_COLORS[elem])
         label_strength = get_strength_label(val)
         table += f"<tr style='background-color:#23262c;'><td>{label}</td><td>{stars}</td><td>{label_strength}</td></tr>"
     table += "</table>"
@@ -444,8 +492,16 @@ def display_element_star_meter(result, identity_element=None):
         unsafe_allow_html=True
     )
 
-# ---- Five Elements Scoring Breakdown Table ----
-def display_element_score_breakdown(result):
+def display_element_score_breakdown(result: dict) -> None:
+    """
+    Displays a detailed scoring breakdown table for the Five Elements, showing visible, hidden, season, and DM bonus points.
+
+    Args:
+        result (dict): Dictionary containing the element_score_breakdown data.
+
+    Returns:
+        None
+    """
     with st.expander("See how we calculate (advanced)"):
         st.markdown(
             "<h4 style='text-align:center;'>Five Elements Scoring Breakdown</h4>",
@@ -454,13 +510,6 @@ def display_element_score_breakdown(result):
 
         breakdown = result["element_score_breakdown"]
         element_order = ["Wood", "Fire", "Earth", "Metal", "Water"]
-        element_emojis = {
-            "Wood": "🌳",
-            "Fire": "🔥",
-            "Earth": "🪨",
-            "Metal": "🪙",
-            "Water": "💧",
-        }
 
         st.markdown(
             '''
@@ -505,7 +554,7 @@ def display_element_score_breakdown(result):
 
         for elem in element_order:
             b = breakdown[elem]
-            emoji = element_emojis.get(elem, "")
+            emoji = ELEMENT_EMOJIS.get(elem, "")
             table += (
                 f"<tr>"
                 f"<td>{emoji} {elem}</td>"
@@ -521,7 +570,17 @@ def display_element_score_breakdown(result):
         table += "</table>"
         st.markdown(table, unsafe_allow_html=True)
 
-def display_time_info(result, timezone_str):
+def display_time_info(result: dict, timezone_str: str) -> None:
+    """
+    Displays time-related information, including standard time, solar-corrected time, and timezone.
+
+    Args:
+        result (dict): Dictionary containing 'standard_dt' and 'solar_dt' datetime objects.
+        timezone_str (str): String representation of the timezone.
+
+    Returns:
+        None
+    """
     st.markdown(
         f"<div style='text-align:center; color:#78908b; margin-top:-0px; margin-bottom:0px; font-size:1.08em;'>"
         f"<div><b>Standard Time:</b> {result['standard_dt'].strftime('%Y-%m-%d %H:%M')}</div>"
@@ -531,7 +590,13 @@ def display_time_info(result, timezone_str):
         unsafe_allow_html=True
     )
 
-def display_privacy_note():
+def display_privacy_note() -> None:
+    """
+    Displays a privacy note informing users that calculations run locally and data is only stored with explicit consent.
+
+    Returns:
+        None
+    """
     st.markdown(
         """
         <div style='text-align:center; margin-top: 8px; margin-bottom: 14px;'>
@@ -544,8 +609,27 @@ def display_privacy_note():
     )
 
 def display_paywall_card(
-        product_name, stripe_checkout, product_pdf_cover, product_pdf_content, left_bullets, right_bullets
-):
+    product_name: str,
+    stripe_checkout: str,
+    product_pdf_cover,
+    product_pdf_content,
+    left_bullets: list,
+    right_bullets: list,
+) -> None:
+    """
+    Displays the paywall card for the premium PDF report, including product details, images, and payment flow.
+
+    Args:
+        product_name (str): The name of the premium product.
+        stripe_checkout (str): Stripe checkout URL.
+        product_pdf_cover (str or image): Cover image for the PDF.
+        product_pdf_content (str or image): Content preview image for the PDF.
+        left_bullets (list): List of feature bullet points for the left column.
+        right_bullets (list): List of feature bullet points for the right column.
+
+    Returns:
+        None
+    """
     # Session state setup
     if "paywall_confirm" not in st.session_state:
         st.session_state["paywall_confirm"] = False
@@ -635,7 +719,16 @@ def display_paywall_card(
                 "Time": str(st.session_state.get("birth_time"))
             })
 
-def display_pdf_request_form(state_dict):
+def display_pdf_request_form(state_dict: dict) -> None:
+    """
+    Displays a form for users to request a free PDF snapshot via email, including consent and input validation.
+
+    Args:
+        state_dict (dict): Dictionary for managing form submission state and user data.
+
+    Returns:
+        None
+    """
     with st.form("email_form"):
         st.markdown(
             "<h4 style='text-align:left;'>Get Your Free Blueprint Snapshot</h4>",
@@ -705,7 +798,13 @@ def display_pdf_request_form(state_dict):
         elif message == "consent":
             st.warning("Please tick the consent box to let us store your details.")
 
-def display_footer():
+def display_footer() -> None:
+    """
+    Displays the footer section with copyright information.
+
+    Returns:
+        None
+    """
     st.markdown(
         """
         <hr style="margin-top:30px; margin-bottom:10px; border:0; border-top:1px solid #333a44;">
@@ -716,5 +815,11 @@ def display_footer():
         unsafe_allow_html=True,
     )
 
-def section_divider():
+def section_divider() -> None:
+    """
+    Displays a horizontal divider line to separate sections in the UI.
+
+    Returns:
+        None
+    """
     st.markdown("---")
