@@ -382,13 +382,14 @@ def display_pillars_table(result: dict) -> None:
         hidden_table += "</table>"
         st.markdown(hidden_table, unsafe_allow_html=True)
 
-def display_element_star_meter(result: dict, identity_element: str = None) -> None:
+def display_element_star_meter(result: dict, identity_element: str = None, identity_polarity: str = None) -> None:
     """
     Displays the Five Elements Star Meter, showing star ratings and strength labels for each element.
 
     Args:
         result (dict): Dictionary containing element strengths.
         identity_element (str, optional): The user's Day Master element for highlighting.
+        identity_polarity (str, optional): The polarity ("Yin" or "Yang") of the Day Master element for displaying its Yin/Yang nature.
 
     Returns:
         None
@@ -478,7 +479,10 @@ def display_element_star_meter(result: dict, identity_element: str = None) -> No
     for elem, val in element_strengths.items():
         label = f"{ELEMENT_EMOJIS.get(elem, '')}&nbsp;<span style='color:{ELEMENT_COLORS[elem]}; font-weight:700'>{elem}</span>"
         if identity_element and elem == identity_element:
-            label = f"{label} 🌟"
+            yin_yang = ""
+            if identity_polarity:
+                yin_yang = "☀️" if "Yang" in identity_polarity else "🌙"
+            label = f"{label} <span style='color:#44c4fa; font-size:0.99em; margin-left:4px;'>{yin_yang}</span>"
         stars = star_meter(val, color=ELEMENT_COLORS[elem])
         label_strength = get_strength_label(val)
         table += f"<tr style='background-color:#23262c;'><td>{label}</td><td>{stars}</td><td>{label_strength}</td></tr>"
@@ -487,7 +491,7 @@ def display_element_star_meter(result: dict, identity_element: str = None) -> No
 
     st.markdown(
         "<div style='color:#edc96d; background:rgba(64,44,0,0.08); text-align:center; font-size:1.03em; margin:12px 0 18px 0; border-radius:8px; padding:8px 10px 6px 10px;'>"
-        "<b>Note:</b> <em>Your Elemental Identity (🌟) is not always your strongest star.</em>"
+        "<b>Note:</b> <em>Your Elemental Identity (☀️/🌙) is not always your strongest star.</em>"
         "</div>",
         unsafe_allow_html=True
     )

@@ -99,7 +99,8 @@ if "bazi_result" in st.session_state and st.session_state["bazi_result"]:
     
     display_element_star_meter(
         st.session_state["bazi_result"],
-        identity_element=dm_info["element"]
+        identity_element=dm_info["element"],
+        identity_polarity=dm_info["polarity"]
     )
 
     section_divider()
