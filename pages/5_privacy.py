@@ -1,6 +1,7 @@
 # privacy.py  – Streamlit multipage
 import streamlit as st
-from bazi_constants import PRIVACY_EMAIL
+
+PRIVACY_EMAIL = "privacy@myelement.cc"
 
 st.title("Privacy & Data Policy")
 

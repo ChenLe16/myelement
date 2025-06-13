@@ -1,5 +1,6 @@
 import streamlit as st
-from bazi_constants import SUPPORT_EMAIL
+
+SUPPORT_EMAIL = "hello@myelement.cc"
 
 st.title("About Us")
 
