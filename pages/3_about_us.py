@@ -1,9 +1,10 @@
 import streamlit as st
+from bazi_constants import SUPPORT_EMAIL
 
 st.title("About Us")
 
 st.markdown(
-    """
+    f"""
 <div style='width:96%;margin:auto;margin-top:18px;'>
 
 <h2 style='color:#ffe9b4;font-size:1.22em;font-weight:700;margin-bottom:4px;'>Vision</h2>
@@ -38,7 +39,7 @@ We keep zero birth-data on our servers. Calculations run client-side; close the 
 <h2 style='color:#ffe9b4;font-size:1.14em;font-weight:700;margin-bottom:4px;'>Join the Conversation</h2>
 <p style='font-size:1.07em;color:#eaeaea;'>
 Curious about the model, researching collaborations, or simply want to share feedback?<br>
-→ <a href="mailto:hello@myelement.app" style='color:#ffe179;'>hello@myelement.app</a>
+→ <a href="mailto:{SUPPORT_EMAIL}" style='color:#ffe179;'>{SUPPORT_EMAIL}</a>
 </p>
 
 <p style='font-size:1.08em;color:#b1b1b1;margin-top:22px;font-style:italic;font-weight:600;'>

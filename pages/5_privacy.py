@@ -1,9 +1,10 @@
 # privacy.py  – Streamlit multipage
 import streamlit as st
+from bazi_constants import PRIVACY_EMAIL
 
 st.title("Privacy & Data Policy")
 
-st.markdown("""
+st.markdown(f"""
 ### What we store  
 We save your name, email, birth details, and gender **only** when you tick the
 consent box to receive a PDF report or newsletter.
@@ -13,7 +14,7 @@ consent box to receive a PDF report or newsletter.
 * Email you occasional product updates
 
 ### How to delete your data  
-Send an email to **privacy@myelement.app**, with the subject line **DELETE**.  
+Send an email to **{PRIVACY_EMAIL}**, with the subject line **DELETE**.  
 We will erase your record from our server within 24 hours and email you a confirmation.
 
 ### Third-party services  
