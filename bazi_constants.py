@@ -1,4 +1,7 @@
 import datetime as dt
+
+SUPPORT_EMAIL = "hello@myelement.cc"
+
 # ————————————————————————————————————————————————————
 # Constants and Mappings
 # ————————————————————————————————————————————————————

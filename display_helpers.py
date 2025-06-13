@@ -1,7 +1,8 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import datetime as dt
 import pycountry
-from bazi_constants import ELEMENT_EMOJIS, ELEMENT_COLORS, BG_GRADIENT, ELEMENT_SHADOW
+from bazi_constants import ELEMENT_EMOJIS, ELEMENT_COLORS, BG_GRADIENT, ELEMENT_SHADOW, SUPPORT_EMAIL
 from gsheet_helpers import append_to_gsheet, is_valid_email, make_unique_key
 
 def display_custom_css():
@@ -693,7 +694,6 @@ def display_paywall_card(
                     st.session_state["show_paywall_popup"] = False
 
                     key = make_unique_key(paywall_email, st.session_state.get('dob'), st.session_state.get('birth_time'), kind="FULL")
-                    
                     paywall_row = [
                         key,
                         dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -707,12 +707,36 @@ def display_paywall_card(
                     ]
                     try:
                         append_to_gsheet(paywall_row)
-                        st.info("Your upgrade request was logged!")
                     except Exception as e:
                         st.warning(f"Failed to log prospect to Google Sheet: {e}")
 
+                    # Open Stripe Checkout in new tab, more reliably
+                    components.html(
+                        f"""
+                        <script>
+                        window.open('{stripe_checkout}', '_blank');
+                        </script>
+                        """,
+                        height=0,
+                        width=0
+                    )
+                    st.markdown(
+                        f"""
+                        <div style='background:#224c38; color:#fff; border-radius:9px; padding:18px 16px 14px 16px; font-size:1.1em; margin-top:10px; margin-bottom:8px;'>
+                            You are being redirected to the payment page.<br>
+                            <span style='font-size:1.08em; color:#e1c972;'>
+                            <b>Pop-up blocked?</b> 
+                            <a href="{stripe_checkout}" target="_blank" style="color:#fff; background:#19be6b; padding:7px 22px; border-radius:7px; text-decoration:none; font-weight:700; margin-left:10px; font-size:1.07em; display:inline-block;">
+                                👉 Click here to pay
+                            </a>
+                            </span>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
         if st.session_state["paywall_confirm"]:
-            st.success("✅ Confirmed! [Proceed to payment](%s)" % stripe_checkout)
+            # st.success("✅ Confirmed! [Proceed to payment](%s)" % stripe_checkout)
             st.markdown("**Your provided details:**")
             st.json({
                 "Name": st.session_state.get("name"),
@@ -789,9 +813,9 @@ def display_pdf_request_form(state_dict: dict) -> None:
                     message = f"error:{e}"
         if message == "success":
             st.success(
-                "✅ Request received! Your personalised PDF snapshot will land in your inbox "
-                "within 48 hours. If you don’t see it, check spam or write us at "
-                "myelement@gmail.com."
+                f"✅ Request received! Your personalised PDF snapshot will land in your inbox "
+                f"within 48 hours. If you don’t see it, check spam or write us at "
+                f"{SUPPORT_EMAIL}."
             )
         elif message == "duplicate":
             st.info("Looks like we already have your request — your PDF snapshot is on its way!")

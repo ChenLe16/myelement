@@ -1,6 +1,6 @@
 # In product_constants.py
 PRODUCT_NAME = "MyElement Blueprint"
-STRIPE_CHECKOUT = "https://buy.stripe.com/YOUR_PAYMENT_LINK"  # TODO: replace with your live Stripe link
+STRIPE_CHECKOUT = "https://buy.stripe.com/cNi4gy4UhgwEcz6fwCak001"  # TODO: replace with your live Stripe link
 PRODUCT_PDF_COVER = "assets/pdf_cover.png"
 PRODUCT_PDF_CONTENT = "assets/pdf_content.png"
 

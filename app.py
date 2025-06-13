@@ -1,6 +1,5 @@
 import streamlit as st
 import datetime as dt
-import pycountry
 from bazi_calculator import compute_bazi_result, get_day_stem
 from display_helpers import (
     display_custom_css, display_main_input_form, display_identity_card, display_pillars_table, display_element_star_meter, display_element_score_breakdown, display_time_info,
