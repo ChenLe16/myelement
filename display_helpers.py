@@ -200,13 +200,6 @@ def display_identity_card(dm_info: dict) -> None:
                 text-align: center;
             '>
                 <span style='
-                    color:#fff;
-                    text-shadow:
-                        0 1.5px 10px #0052,
-                        0 1.5px 0px #fff9;
-                    font-weight:900;
-                '>You are </span>
-                <span style='
                     color:{color};
                     text-shadow: 0 1px 3px rgba(0,0,0,.35), {ELEMENT_SHADOW[elem]};
                     font-weight:900;
@@ -357,14 +350,7 @@ def display_pillars_table(result: dict) -> None:
             f"<td>{branch_html}</td>"
             f"</tr>"
         )
-    # ---- Add merged cell row for strength verdict ----
-    table += f"""
-        <tr>
-            <td colspan="3" class="strength-row">
-                Day Master Strength: <span style="color:{strength_color};">{verdict}</span>
-            </td>
-        </tr>
-    """
+    # (Removed Day Master Strength verdict row from pillars table)
     table += "</table>"
     st.markdown(table, unsafe_allow_html=True)
 
@@ -425,33 +411,33 @@ def display_element_star_meter(result: dict, identity_element: str = None, ident
 
     st.markdown("""
     <style>
+    .star-meter-table-dark {
+        width: 80% !important;
+        margin-left: auto;
+        margin-right: auto;
+        border-radius: 13px;
+        box-shadow: 0 1px 10px #23272e;
+        background: #23262c;
+        overflow: hidden;
+    }
     .star-meter-table-dark th, .star-meter-table-dark td {
         font-size: 1.11em !important;
         padding: 8px 14px !important;
         font-weight: 600;
         border: none;
     }
-    .star-meter-table-dark {
-        width: 80% !important;
-        margin-left: auto;
-        margin-right: auto;
-        border-radius: 11px;
-        box-shadow: 0 1px 10px #23272e;
-        background: #23262c;
-    }
-    .star-meter-table-dark tr {
-        transition: background 0.18s, transform 0.25s;
-        position: relative;
-    }
-    .star-meter-table-dark tr:hover {
-        background: #242d34 !important;
-        transform: scale(1.06);
-        z-index: 2;
-    }
     .star-meter-table-dark th {
         background: #21242a;
         color: #ffe9b4 !important;
         font-size:1.09em;
+    }
+    .star-meter-table-dark tr:first-child th {
+        border-top-left-radius: 13px;
+        border-top-right-radius: 13px;
+    }
+    .star-meter-table-dark tr:last-child td {
+        border-bottom-left-radius: 13px;
+        border-bottom-right-radius: 13px;
     }
     .star-meter-legend {
         text-align: center;
@@ -476,7 +462,7 @@ def display_element_star_meter(result: dict, identity_element: str = None, ident
             return "Very Weak"
 
     table = "<table class='star-meter-table-dark'>"
-    table += "<tr><th>Element</th><th>Star Meter</th><th>Strength</th></tr>"
+    table += "<tr><th>Element</th><th>Star Meter</th></tr>"
     for elem, val in element_strengths.items():
         label = f"{ELEMENT_EMOJIS.get(elem, '')}&nbsp;<span style='color:{ELEMENT_COLORS[elem]}; font-weight:700'>{elem}</span>"
         if identity_element and elem == identity_element:
@@ -485,8 +471,17 @@ def display_element_star_meter(result: dict, identity_element: str = None, ident
                 yin_yang = "☀️" if "Yang" in identity_polarity else "🌙"
             label = f"{label} <span style='color:#44c4fa; font-size:0.99em; margin-left:4px;'>{yin_yang}</span>"
         stars = star_meter(val, color=ELEMENT_COLORS[elem])
-        label_strength = get_strength_label(val)
-        table += f"<tr style='background-color:#23262c;'><td>{label}</td><td>{stars}</td><td>{label_strength}</td></tr>"
+        # label_strength = get_strength_label(val)  # No longer needed for table row
+        table += f"<tr style='background-color:#23262c;'><td>{label}</td><td>{stars}</td></tr>"
+    # Add Day Master strength verdict row to the star meter table
+    if identity_element and result.get("strength"):
+        strength_color = "#fab74b" if result["strength"] == "Strong" else "#44c4fa"
+        table += (
+            f"<tr>"
+            f"<td colspan='2' style='background:#272c32; text-align:center; font-size:1.13em; font-weight:bold; letter-spacing:0.01em; padding:14px 18px; border-bottom-left-radius:13px; border-bottom-right-radius:13px;'>"
+            f"Day Master Strength: <span style='color:{strength_color};'>{result['strength']}</span>"
+            f"</td></tr>"
+        )
     table += "</table>"
     st.markdown(table, unsafe_allow_html=True)
 

@@ -78,7 +78,7 @@ ELEMENT_SHADOW = {
 # Unified dictionary for Day Master identities and attributes
 DAY_MASTER_IDENTITIES = {
     "甲": {
-        "header": "The Resolute Oak Person",
+        "header": "The Resolute Oak",
         "traits": "Steady growth, long‑range vision; anchors big projects.",
         "takeaway": "Lean on your capacity for endurance when teams lose focus. Stay open to new methods so you don’t become rigid.",
         "element": "Wood",
@@ -87,7 +87,7 @@ DAY_MASTER_IDENTITIES = {
         "emoji": "🌳",
     },
     "乙": {
-        "header": "The Adaptive Willow Person",
+        "header": "The Adaptive Willow",
         "traits": "Flexible thinker; links ideas and people with ease.",
         "takeaway": "Your agility is a super-connector—use it to translate between specialists. Guard against spreading yourself too thin; pick one root project to deepen.",
         "element": "Wood",
@@ -96,7 +96,7 @@ DAY_MASTER_IDENTITIES = {
         "emoji": "🌿",
     },
     "丙": {
-        "header": "The Radiant Sun Person",
+        "header": "The Radiant Sun",
         "traits": "Energises groups and sparks momentum.",
         "takeaway": "People mirror your enthusiasm, so set the tone deliberately. Schedule quiet “eclipse” time to keep from burning out.",
         "element": "Fire",
@@ -105,7 +105,7 @@ DAY_MASTER_IDENTITIES = {
         "emoji": "🌞",
     },
     "丁": {
-        "header": "The Enduring Ember Person",
+        "header": "The Enduring Ember",
         "traits": "Sustains warm focus; mentors and refines goals.",
         "takeaway": "Your steady glow excels in 1-to-1 guidance—cultivate mentorship roles. Beware of dimming when recognition is delayed; celebrate small wins.",
         "element": "Fire",
@@ -114,7 +114,7 @@ DAY_MASTER_IDENTITIES = {
         "emoji": "🔥",
     },
     "戊": {
-        "header": "The Grounded Mountain Person",
+        "header": "The Grounded Mountain",
         "traits": "Reliable planner; sees the whole terrain before acting.",
         "takeaway": "Strategic patience lets you solve problems others rush past. Stay receptive to feedback so analysis doesn’t turn into immobility.",
         "element": "Earth",
@@ -123,7 +123,7 @@ DAY_MASTER_IDENTITIES = {
         "emoji": "⛰️",
     },
     "己": {
-        "header": "The Cultivating Marble Person",
+        "header": "The Cultivating Marble",
         "traits": "Patient craftsman; turns rough ideas into polished results.",
         "takeaway": "Your eye for detail builds lasting value—own the refinement phase. Balance perfectionism with deadlines to keep momentum.",
         "element": "Earth",
@@ -132,7 +132,7 @@ DAY_MASTER_IDENTITIES = {
         "emoji": "🪨",
     },
     "庚": {
-        "header": "The Strategic Sword Person",
+        "header": "The Strategic Sword",
         "traits": "Decisive and direct—cuts through complexity to solutions.",
         "takeaway": "Teams rely on your clarity; wield it to unblock consensus. Temper rapid judgement with empathy to avoid unintended cuts.",
         "element": "Metal",
@@ -141,7 +141,7 @@ DAY_MASTER_IDENTITIES = {
         "emoji": "⚔️",
     },
     "辛": {
-        "header": "The Discerning Jewel Person",
+        "header": "The Discerning Jewel",
         "traits": "Precise, value‑driven; elevates hidden quality.",
         "takeaway": "You instinctively spot what’s precious—apply that to both tasks and people. Remember not everyone craves the same level of polish; choose battles.",
         "element": "Metal",
@@ -150,7 +150,7 @@ DAY_MASTER_IDENTITIES = {
         "emoji": "💎",
     },
     "壬": {
-        "header": "The Dynamic Wave Person",
+        "header": "The Dynamic Wave",
         "traits": "Exploratory, big‑picture thinker driving new ventures.",
         "takeaway": "Your breadth fuels innovation—map bold routes others don’t see. Anchor ideas with concrete milestones so they don’t dissipate.",
         "element": "Water",
@@ -159,7 +159,7 @@ DAY_MASTER_IDENTITIES = {
         "emoji": "🌊",
     },
     "癸": {
-        "header": "The Reflective Rain Person",
+        "header": "The Reflective Rain",
         "traits": "Calm insight‑giver; nourishes teams with clarity.",
         "takeaway": "Quiet observation lets you solve root issues others miss. Speak insights early; withholding too long can flood the project later.",
         "element": "Water",

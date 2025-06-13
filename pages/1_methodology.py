@@ -30,8 +30,8 @@ Every pillar carries one of the **Five Elements**.  These are classic nature‑a
 |---|---|---|
 | 🌳 | Wood  | Vision • Learning |
 | 🔥 | Fire  | Expression • Motivation |
-| 🌍 | Earth | Stability • Support |
-| ⚙️ | Metal | Structure • Precision |
+| 🪨 | Earth | Stability • Support |
+| ⚔️ | Metal | Structure • Precision |
 | 💧 | Water | Strategy • Adaptability |
 
 ---
