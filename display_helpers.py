@@ -129,7 +129,7 @@ def display_user_summary(name: str, gender: str, country: str, dob, birth_time) 
             <span style='font-weight:600; font-size:1.04em;'>Gender:</span> {gender}
             &nbsp; | &nbsp;
             <span style='font-weight:600; font-size:1.04em;'>Country:</span> {country}
-            <br>
+            &nbsp; | &nbsp;
             <span style='font-weight:600; font-size:1.04em;'>Date of Birth:</span> {dob}
             &nbsp; | &nbsp;
             <span style='font-weight:600; font-size:1.04em;'>Birth Time:</span> {birth_time}
@@ -137,7 +137,7 @@ def display_user_summary(name: str, gender: str, country: str, dob, birth_time) 
         """,
         unsafe_allow_html=True
     )
-
+    
 def display_identity_card(dm_info: dict) -> None:
     """
     Displays the Identity Spotlight card, highlighting the user's Day Master, key traits, and main takeaway.
