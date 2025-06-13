@@ -641,10 +641,7 @@ def display_paywall_card(
     if "show_paywall_popup" not in st.session_state:
         st.session_state["show_paywall_popup"] = False
 
-    st.header(
-        f"{product_name}",
-        help="6-page PDF report: core Five-Element analysis, chart visuals, guidance, and custom advice."
-    )
+    st.header(product_name)
 
     with st.container():
         row1_left, row1_right = st.columns([1.5, 1])
@@ -654,12 +651,12 @@ def display_paywall_card(
         with row1_right:
             st.image(product_pdf_cover, use_container_width=True)
 
-        row2_left, row2_right = st.columns([1, 1.5])
+        row2_left, row2_right = st.columns([1.5, 1])
         with row2_left:
-            st.image(product_pdf_content, use_container_width=True)
-        with row2_right:
             st.subheader("Why It Matters")
             st.markdown("\n".join([f"- {item}" for item in right_bullets]))
+        with row2_right:
+            st.image(product_pdf_content, use_container_width=True)
 
         st.markdown(
             "<div style='margin: 0.8em 0 1.1em 0; font-size:1.75rem; color:#24cc80; "

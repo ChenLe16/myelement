@@ -118,9 +118,9 @@ if "bazi_result" in st.session_state and st.session_state["bazi_result"]:
         LEFT_BULLETS, 
         RIGHT_BULLETS)
 
-    section_divider()
-
-    display_time_info(st.session_state["bazi_result"], st.session_state["timezone_str"])
+    # Display the Standard Time, Solar-Corrected Time and Timezone
+    # section_divider()
+    # display_time_info(st.session_state["bazi_result"], st.session_state["timezone_str"])
 
     section_divider()
 
