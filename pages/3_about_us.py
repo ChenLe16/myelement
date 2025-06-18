@@ -1,5 +1,7 @@
 import streamlit as st
-from display_helpers import display_footer
+from display_helpers import display_top_logo_bar, display_footer
+
+display_top_logo_bar()
 
 SUPPORT_EMAIL = "hello@myelement.cc"
 

@@ -1,6 +1,8 @@
 # privacy.py  – Streamlit multipage
 import streamlit as st
-from display_helpers import display_footer
+from display_helpers import display_top_logo_bar, display_footer
+
+display_top_logo_bar()
 
 PRIVACY_EMAIL = "privacy@myelement.cc"
 

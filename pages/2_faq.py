@@ -1,4 +1,7 @@
 import streamlit as st
+from display_helpers import display_top_logo_bar, display_footer
+
+display_top_logo_bar()
 
 st.title("Frequently Asked Questions")
 
@@ -42,3 +45,6 @@ We only use your birth data to calculate your result. We do not store, share, or
 Yes! We regularly release new blog posts explaining different aspects of your result in more depth. You can also subscribe to get updates or request a personalized version if you're interested.
 
 """)
+
+# Footer
+display_footer()

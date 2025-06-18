@@ -33,11 +33,10 @@ def display_custom_css():
     </style>
     """, unsafe_allow_html=True)
 
-def display_hero_section():
+def display_top_logo_bar():
     """
-    Displays the hero section with logo and app name on the top left, headline centered.
+    Displays the logo and app name at the top left of the page.
     """
-    # Top bar: logo + app name (tight, top left, perfectly aligned)
     cols = st.columns([0.10, 0.90])
     with cols[0]:
         st.image("assets/logo/logo-myelement-transparent.png", width=68)
@@ -52,6 +51,12 @@ def display_hero_section():
             """,
             unsafe_allow_html=True
         )
+
+def display_hero_section():
+    """
+    Displays the hero section with logo and app name on the top left, headline centered.
+    """
+    display_top_logo_bar()
 
     # Main hero section, centered
     st.markdown(
