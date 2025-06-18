@@ -1,4 +1,5 @@
 import streamlit as st
+from display_helpers import display_footer
 
 st.title("How We Calculate Your Results")
 
@@ -77,5 +78,8 @@ Think of it as a mirror, not a mold—you decide how to use the reflection.
 
 st.info("🔒 **Privacy:** Calculations run in‑browser. We only store your data if you request a PDF report.")
 
-if st.button("Dive deeper on the blog 👉"):
-    st.switch_page("pages/4_blog.py")   # requires Streamlit multipage setup
+# if st.button("Dive deeper on the blog 👉"):
+#     st.switch_page("pages/4_blog.py")   # requires Streamlit multipage setup
+
+# Footer
+display_footer()

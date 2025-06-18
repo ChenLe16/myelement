@@ -1,5 +1,6 @@
 # privacy.py  – Streamlit multipage
 import streamlit as st
+from display_helpers import display_footer
 
 PRIVACY_EMAIL = "privacy@myelement.cc"
 
@@ -24,3 +25,6 @@ We will erase your record from our server within 24 hours and email you a conf
 
 We never sell or share your data with anyone else.
 """)
+
+# Footer
+display_footer()

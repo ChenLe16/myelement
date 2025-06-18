@@ -1,4 +1,5 @@
 import streamlit as st
+from display_helpers import display_footer
 
 SUPPORT_EMAIL = "hello@myelement.cc"
 
@@ -49,3 +50,6 @@ MyElement: tradition quantified, insight without superstition.
 
 </div>
 """, unsafe_allow_html=True)
+
+# Footer
+display_footer()
