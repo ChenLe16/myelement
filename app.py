@@ -122,7 +122,7 @@ if "bazi_result" in st.session_state and st.session_state["bazi_result"]:
     # section_divider()
     # display_time_info(st.session_state["bazi_result"], st.session_state["timezone_str"])
 
-    section_divider()
+    # section_divider()
 
     # PDF email snapshot request section
     # display_pdf_request_form(st.session_state)
