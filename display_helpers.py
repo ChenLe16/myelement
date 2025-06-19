@@ -39,12 +39,12 @@ def display_top_logo_bar():
     """
     cols = st.columns([0.10, 0.90])
     with cols[0]:
-        st.image("assets/logo/logo-myelement-transparent.png", width=68)
+        st.image("assets/logo/icon-close.png", width=68)
     with cols[1]:
         st.markdown(
             """
-            <div style='display: flex; align-items: center; height: 60px; margin-left: -16px;'>
-                <span style='font-size:1.38rem; font-weight:800; color:#fff; letter-spacing:0.5px;'>
+            <div style='display: flex; align-items: center; height: 60px; margin-left: -10px;'>
+                <span style='font-size:2rem; font-weight:800; color:#fff; letter-spacing:0.5px;'>
                     MyElement
                 </span>
             </div>

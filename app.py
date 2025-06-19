@@ -26,7 +26,7 @@ def _init_state():
 
 st.set_page_config(
     page_title="MyElement",
-    page_icon="assets/logo/logo-myelement-close.png",
+    page_icon="assets/logo/icon-close.png",
     layout="centered",
     initial_sidebar_state="collapsed"
 )
