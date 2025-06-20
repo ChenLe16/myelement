@@ -82,6 +82,43 @@ def display_hero_section():
         </style>
         """, unsafe_allow_html=True
     )
+    
+def display_feature_card(
+        color, label, headline, body, image_path, image_on="right", button_text=None, button_callback=None
+):
+    """
+    Displays a feature card with optional CTA button.
+
+    Args:
+        color (str): Color for label.
+        label (str): Short label above card.
+        headline (str): Title of card.
+        body (str): Main body text.
+        image_path (str): Path to image.
+        image_on (str): 'right' or 'left' (default 'right').
+        button_text (str, optional): CTA button label.
+        button_callback (function, optional): Function to call if button is clicked.
+
+    Returns:
+        None
+    """
+    st.markdown(f":{color}[{label}]")
+
+    with st.container():
+        if image_on == "right":
+            col_text, col_img = st.columns([1.5, 1])
+        else:
+            col_img, col_text = st.columns([1, 1.5])
+
+        with col_text:
+            st.subheader(headline)
+            st.text(body)
+            if button_text:
+                if st.button(button_text, key=f"feature-card-btn-{headline}"):
+                    if button_callback:
+                        button_callback()
+        with col_img:
+            st.image(image_path, use_container_width=True)
 
 def display_main_input_form():
     """
@@ -90,26 +127,44 @@ def display_main_input_form():
     Returns:
         tuple: (name (str), gender (str), country (str), dob (date), hour (int), minute (int), generate_clicked (bool))
     """
+    st.markdown('<div id="main-input-form"></div>', unsafe_allow_html=True)
     with st.form("star_meter_form"):
-        name = st.text_input("Name")
-        gender = st.selectbox("Gender", ["Male", "Female"])
+        # 1. Add section heading at the very start
+        st.markdown("### Step 1: Enter Your Birth Details")
+
+        # 2. Add helper text for each field
+        name = st.text_input("Name", help="What should we call you? Nicknames are fine.")
+        gender = st.selectbox("Gender", ["Male", "Female"], help="Needed for accurate element analysis.")
         country_list = sorted([c.name for c in pycountry.countries])
         country = st.selectbox(
             "Country of Birth",
             country_list,
-            index=country_list.index("Malaysia")
+            index=country_list.index("Malaysia"),
+            help="This ensures the right solar time and element mapping."
         )
         dob = st.date_input(
             "Date of Birth",
             value=dt.date(1990, 1, 1),
             min_value=dt.date(1900, 1, 1),
-            max_value=dt.date.today() + dt.timedelta(days=365*2)
+            max_value=dt.date.today() + dt.timedelta(days=365*2),
+            help="Accurate date ensures the correct pillar calculation."
         )
         col1, col2 = st.columns([1, 1])
         with col1:
             hour = st.selectbox("Hour (H)", list(range(0, 24)), index=12)
         with col2:
             minute = st.selectbox("Minute (M)", list(range(0, 60)), index=0)
+        # 3. Add error/validation for hour and minute
+        if not (0 <= hour < 24):
+            st.warning("Hour must be between 0 and 23.")
+        if not (0 <= minute < 60):
+            st.warning("Minute must be between 0 and 59.")
+
+        # 4. Add advanced timezone/DST confidence helper before the warning about exact time
+        with st.expander("Advanced: Need manual UTC offset or daylight saving?"):
+            st.write(
+                "If you know your birth time was affected by daylight saving time, or you want to adjust for a specific UTC offset, contact us or check our methodology page."
+            )
 
         st.warning(
             "⏱ **Exact birth time matters.** Even a five‑minute difference can change your results."
@@ -120,6 +175,9 @@ def display_main_input_form():
         col1, col2, col3 = st.columns([2, 3, 2])
         with col2:
             generate_clicked = st.form_submit_button("✨ Generate My Elemental Star Meter")
+
+        # 6. Improve mobile spacing by adding a spacing div after the submit button
+        st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
     
     # Return all input values and the button state
     return name, gender, country, dob, hour, minute, generate_clicked
@@ -615,13 +673,7 @@ def display_privacy_note() -> None:
         None
     """
     st.markdown(
-        """
-        <div style='text-align:center; margin-top: 8px; margin-bottom: 14px;'>
-            <span style='font-size:0.99em; color:#a9b7c6;'>
-                <em>All calculations run locally. We only store your details if you ask us to email the full PDF report.</em>
-            </span>
-        </div>
-        """,
+        "<span style='font-size:1em; color:#a9b7c6;'>🔒 All calculations run locally. <a href='/privacy' style='color:#1DBF73;'>Learn more</a></span>",
         unsafe_allow_html=True,
     )
 
@@ -662,7 +714,9 @@ def display_paywall_card(
             st.markdown("\n".join([f"- {item}" for item in left_bullets]))
         with row1_right:
             st.image(product_pdf_cover, use_container_width=True)
-
+        
+        section_divider()
+        
         row2_left, row2_right = st.columns([1.5, 1])
         with row2_left:
             st.subheader("Why It Matters")
@@ -927,6 +981,22 @@ def display_footer() -> None:
         </div>
         """,
         unsafe_allow_html=True
+    )
+
+
+def my_scroll_callback():
+    import streamlit.components.v1 as components
+    components.html(
+        """
+        <script>
+            const el = window.parent.document.getElementById('main-input-form');
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth' });
+            }
+        </script>
+        """,
+        height=0,
+        width=0,
     )
 
 def section_divider() -> None:

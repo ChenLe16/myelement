@@ -1,10 +1,18 @@
 import streamlit as st
+
+st.set_page_config(
+    page_title="MyElement",
+    page_icon="assets/logo/icon-close.png",
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
+
 import datetime as dt
 from bazi_calculator import compute_bazi_result, get_day_stem
 from display_helpers import (
     display_custom_css, display_main_input_form, display_identity_card, display_pillars_table, display_element_star_meter, display_element_score_breakdown, display_time_info,
-    display_hero_section, display_footer, display_privacy_note, display_paywall_card, display_pdf_request_form, display_user_summary,
-    section_divider
+    display_feature_card, display_hero_section, display_footer, display_privacy_note, display_paywall_card, display_pdf_request_form, display_user_summary,
+    section_divider, my_scroll_callback
 )
 from bazi_constants import DAY_MASTER_IDENTITIES
 from product_constants import PRODUCT_NAME, STRIPE_CHECKOUT, PRODUCT_PDF_COVER, PRODUCT_PDF_CONTENT, LEFT_BULLETS, RIGHT_BULLETS
@@ -22,15 +30,6 @@ def _init_state():
     for k, v in defaults.items():
         st.session_state.setdefault(k, v)
 
-# ────────────────────────────────────────────────────
-
-st.set_page_config(
-    page_title="MyElement",
-    page_icon="assets/logo/icon-close.png",
-    layout="centered",
-    initial_sidebar_state="collapsed"
-)
-
 # Inject CSS for the submit button to match hero call-to-action styling.
 display_custom_css()
 
@@ -39,6 +38,36 @@ _init_state()
 
 # Display the landing and hero section.
 display_hero_section()
+
+# Display Hero Image
+st.image("assets/images/heroimage.png")
+
+section_divider()
+
+# Display feature spotlights
+display_feature_card(
+    color="green",
+    label="ELEMENT MIRROR",
+    headline="Spot Your Quietest Element",
+    body="Every chart hides one “quiet” element. We surface it in seconds and show how that blind-spot explains recurring dips in energy or focus.",
+    image_path="assets/images/feature-1.png",
+    button_text="Reveal Mine",
+    button_callback=my_scroll_callback
+)
+
+section_divider()
+
+display_feature_card(
+    color="blue",
+    label="CAREER COMPASS",
+    headline="Find Roles You Thrive In",
+    body="Your chart highlights work styles, team dynamics, and industries where your element shines—plus a short list of “energy-drain” settings to avoid or minimise.",
+    image_path="assets/images/feature-2.png",
+    button_text="Generate My Free Meter",
+    button_callback=my_scroll_callback
+)
+
+section_divider()
 
 # Main input form (with card background)
 name, gender, country, dob, hour, minute, generate_clicked = display_main_input_form()# with st.form("star_meter_form"):
