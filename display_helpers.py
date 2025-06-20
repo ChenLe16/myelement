@@ -2,8 +2,27 @@ import streamlit as st
 import streamlit.components.v1 as components
 import datetime as dt
 import pycountry
+import random
 from bazi_constants import ELEMENT_EMOJIS, ELEMENT_COLORS, BG_GRADIENT, ELEMENT_SHADOW, SUPPORT_EMAIL
 from gsheet_helpers import append_to_gsheet, is_valid_email, make_unique_key
+
+# --- Standalone human check function ---
+def display_human_check():
+    """Display a simple human check question and return True if correct, else False."""
+    if "captcha_a" not in st.session_state or "captcha_b" not in st.session_state:
+        st.session_state["captcha_a"] = random.randint(2, 9)
+        st.session_state["captcha_b"] = random.randint(2, 9)
+    a = st.session_state["captcha_a"]
+    b = st.session_state["captcha_b"]
+    human_answer = st.text_input(f"Human check: What is {a} + {b}?")
+    if human_answer and human_answer.strip() == str(a + b):
+        # Refresh question for next time (optional, or do on submit)
+        st.session_state["captcha_a"] = random.randint(2, 9)
+        st.session_state["captcha_b"] = random.randint(2, 9)
+        return True
+    elif human_answer:
+        st.warning("Human check failed. Please try again.")
+    return False
 
 def display_custom_css():
     """
@@ -172,15 +191,23 @@ def display_main_input_form():
 
         display_privacy_note()
 
+        # 5. Human check
+        passed_human_check = display_human_check()
         col1, col2, col3 = st.columns([2, 3, 2])
         with col2:
-            generate_clicked = st.form_submit_button("✨ Generate My Elemental Star Meter")
+            generate_clicked = st.form_submit_button(
+                "✨ Generate My Elemental Star Meter"
+            )
 
         # 6. Improve mobile spacing by adding a spacing div after the submit button
         st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
-    
+
+    # After the form context: Show warning if form was submitted but human check not passed
+    if generate_clicked and not passed_human_check:
+        st.warning("Please pass the human check before generating your Star Meter.")
+
     # Return all input values and the button state
-    return name, gender, country, dob, hour, minute, generate_clicked
+    return name, gender, country, dob, hour, minute, generate_clicked and passed_human_check
 
 def display_user_summary(name: str, gender: str, country: str, dob, birth_time) -> None:
     """
