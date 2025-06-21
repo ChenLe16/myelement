@@ -7,6 +7,8 @@ import hashlib
 import datetime as dt
 
 SHEET_NAME = "MyElement Leads"
+PROSPECTS_SHEET_NAME = "prospects"  # Main worksheet/tab name for prospect leads
+SURVEY_SHEET_NAME = "survey"  # Name of the new worksheet/tab in your Google Sheet
 EMAIL_PATTERN = re.compile(r"^[\w\.-]+@[\w\.-]+\.\w+$")
 
 def is_valid_email(email: str) -> bool:
@@ -36,7 +38,7 @@ def append_to_gsheet(data: list) -> str:
         creds_dict = json.loads(st.secrets["google_service_account"])
         creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
         client = gspread.authorize(creds)
-        sheet = client.open(SHEET_NAME).sheet1  # Adjust if needed
+        sheet = client.open(SHEET_NAME).worksheet(PROSPECTS_SHEET_NAME)
         key = data[0]
         if sheet.findall(key):
             return 'duplicate'
@@ -59,3 +61,25 @@ def make_unique_key(email: str, dob: dt.date, birth_time: dt.time, kind: str = "
     """
     key_source = f"{email}-{dob.strftime('%Y-%m-%d')}-{birth_time.strftime('%H:%M')}-{kind}"
     return hashlib.sha256(key_source.encode("utf-8")).hexdigest()
+
+def append_survey_response(rating, user_id="anon", name=""):
+    """Append a survey response to the Survey sheet.
+    Args:
+        rating: Integer, 1 to 4 (accuracy rating).
+        user_id: Optional identifier (email or anon/session).
+        name: User's name from input (optional).
+    Returns:
+        'added' or error string.
+    """
+    try:
+        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+        creds_dict = json.loads(st.secrets["google_service_account"])
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+        client = gspread.authorize(creds)
+        sheet = client.open(SHEET_NAME)
+        ws = sheet.worksheet(SURVEY_SHEET_NAME)
+        timestamp = dt.datetime.utcnow().isoformat()
+        ws.append_row([timestamp, rating, user_id, name])
+        return "added"
+    except Exception as e:
+        return f"error: {str(e)}"

@@ -4,7 +4,7 @@ import datetime as dt
 import pycountry
 import random
 from bazi_constants import ELEMENT_EMOJIS, ELEMENT_COLORS, BG_GRADIENT, ELEMENT_SHADOW, SUPPORT_EMAIL
-from gsheet_helpers import append_to_gsheet, is_valid_email, make_unique_key
+from gsheet_helpers import append_to_gsheet, is_valid_email, make_unique_key, append_survey_response
 
 # --- Standalone human check function ---
 def display_human_check():
@@ -149,7 +149,7 @@ def display_main_input_form():
     st.markdown('<div id="main-input-form"></div>', unsafe_allow_html=True)
     with st.form("star_meter_form"):
         # 1. Add section heading at the very start
-        st.markdown("### Step 1: Enter Your Birth Details")
+        st.markdown("### Enter Your Birth Details")
 
         # 2. Add helper text for each field
         name = st.text_input("Name", help="What should we call you? Nicknames are fine.")
@@ -1034,3 +1034,73 @@ def section_divider() -> None:
         None
     """
     st.markdown("---")
+    
+def display_accuracy_survey():
+    """
+    Displays a micro-survey asking the user to rate the result from 1-5 stars.
+    Returns the rating value if submitted, else None.
+    """
+    st.markdown("""
+        <h3 style='margin-bottom: 1.1em; font-size:1.44em;'>How accurate was your result?</h3>
+        <style>
+        .star-rating-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.02rem;
+            gap: 0.06em;
+            margin-bottom: 1.10em;
+        }
+        .star-btn button {
+            min-width: 36px !important;
+            max-width: 36px !important;
+            height: 36px !important;
+            font-size: 1.59rem !important;
+            padding: 0 !important;
+            margin: 0 0px !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    if "accuracy_star" not in st.session_state:
+        st.session_state["accuracy_star"] = 0
+    if "accuracy_star_submitted" not in st.session_state:
+        st.session_state["accuracy_star_submitted"] = False
+
+    # Use much narrower columns for tighter spacing
+    star_cols = st.columns([0.12, 0.12, 0.12, 0.12, 0.12, 1])
+    for i in range(5):
+        with star_cols[i]:
+            star = "★" if st.session_state["accuracy_star"] >= i + 1 else "☆"
+            if st.button(star, key=f"star_btn_{i+1}", help=f"{i+1} star{'s' if i > 0 else ''}"):
+                st.session_state["accuracy_star"] = i + 1
+
+    # Show selected rating as (N/5) in yellow, slightly bold, after stars, same line
+    with star_cols[5]:
+        if st.session_state["accuracy_star"] > 0:
+            st.markdown(
+                f"""
+                <div style='
+                    display:inline-block;
+                    color:#ffe066;
+                    font-weight:600;
+                    font-size:1.21rem;
+                    margin-left:0.33em;
+                    vertical-align:middle;
+                    line-height: 1;
+                    letter-spacing: 0.01em;
+                '>
+                    ({st.session_state["accuracy_star"]}/5)
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+    # Submit button, centered below stars
+    submitted = st.button("Submit Rating", disabled=st.session_state["accuracy_star"] == 0)
+    if submitted:
+        st.session_state["accuracy_star_submitted"] = True
+        st.success(f"Thank you for rating {st.session_state['accuracy_star']} star{'s' if st.session_state['accuracy_star']>1 else ''}!")
+        return st.session_state["accuracy_star"]
+
+    return st.session_state["accuracy_star"] if st.session_state["accuracy_star_submitted"] else None

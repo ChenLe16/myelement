@@ -12,8 +12,9 @@ from bazi_calculator import compute_bazi_result, get_day_stem
 from display_helpers import (
     display_custom_css, display_main_input_form, display_identity_card, display_pillars_table, display_element_star_meter, display_element_score_breakdown, display_time_info,
     display_feature_card, display_hero_section, display_footer, display_privacy_note, display_paywall_card, display_pdf_request_form, display_user_summary,
-    section_divider, my_scroll_callback
+    section_divider, my_scroll_callback, display_accuracy_survey
 )
+from gsheet_helpers import append_survey_response
 from bazi_constants import DAY_MASTER_IDENTITIES
 from product_constants import PRODUCT_NAME, STRIPE_CHECKOUT, PRODUCT_PDF_COVER, PRODUCT_PDF_CONTENT, LEFT_BULLETS, RIGHT_BULLETS
 
@@ -135,6 +136,18 @@ if "bazi_result" in st.session_state and st.session_state["bazi_result"]:
         identity_element=dm_info["element"],
         identity_polarity=dm_info["polarity"]
     )
+    
+    if (
+        "bazi_result" in st.session_state
+        and st.session_state["bazi_result"]
+        and not st.session_state.get("survey_completed")
+    ):
+        rating = display_accuracy_survey()
+        if rating is not None:
+            user_id = st.session_state.get("submitted_email", "anon")
+            user_name = st.session_state.get("name", "")
+            append_survey_response(rating, user_id, user_name)
+            st.session_state["survey_completed"] = True
 
     section_divider()
 
