@@ -52,6 +52,24 @@ def display_custom_css():
     </style>
     """, unsafe_allow_html=True)
 
+def display_identity_section(title, color, image_path, paragraph):
+    # Use columns for layout: image and text, with vertical alignment
+    col1, col2 = st.columns([1, 2], gap="medium")
+    with col1:
+        st.image(image_path, use_container_width=False)
+    with col2:
+        st.markdown(
+            f'''
+            <div style="display: flex; flex-direction: column; justify-content: center; height: 100%; min-height: 160px;">
+                <span style="font-size:2rem; font-weight:800; color:{color}; margin-bottom: 0.22em;">{title}</span>
+                <div style="color:#efecde; font-size:1.15em; line-height:1.74;">
+                    {paragraph}
+                </div>
+            </div>
+            ''',
+            unsafe_allow_html=True
+        )
+
 def display_top_logo_bar():
     """
     Displays the logo and app name at the top left of the page.
@@ -345,6 +363,26 @@ def display_identity_card(dm_info: dict) -> None:
         """,
         unsafe_allow_html=True
     )
+
+
+# --- New function: Display expanded Career, Growth, and Relationship advice paragraphs ---
+def display_identity_expanded_paragraphs(dm_info: dict) -> None:
+    display_identity_section(
+        "Career", "#83e7a7", "assets/images/result-career.png", dm_info.get("career", "")
+    )
+
+    section_divider()
+    
+    display_identity_section(
+        "Growth", "#fcd669", "assets/images/result-growth.png", dm_info.get("growth", "")
+    )
+    
+    section_divider()
+    
+    display_identity_section(
+        "Relationship", "#b3d1ff", "assets/images/result-relationship.png", dm_info.get("relationship", "")
+    )
+    st.markdown('</div>', unsafe_allow_html=True)
 
 def display_pillars_table(result: dict) -> None:
     """

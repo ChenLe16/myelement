@@ -11,7 +11,7 @@ import datetime as dt
 from bazi_calculator import compute_bazi_result, get_day_stem
 from display_helpers import (
     display_custom_css, display_main_input_form, display_identity_card, display_pillars_table, display_element_star_meter, display_element_score_breakdown, display_time_info,
-    display_feature_card, display_hero_section, display_footer, display_privacy_note, display_paywall_card, display_pdf_request_form, display_user_summary,
+    display_feature_card, display_hero_section, display_footer, display_identity_expanded_paragraphs, display_privacy_note, display_paywall_card, display_pdf_request_form, display_user_summary,
     section_divider, my_scroll_callback, display_accuracy_survey
 )
 from gsheet_helpers import append_survey_response
@@ -121,11 +121,11 @@ if "bazi_result" in st.session_state and st.session_state["bazi_result"]:
     dm_info = DAY_MASTER_IDENTITIES[dm_stem]
     
     display_identity_card(dm_info)   
-    # Short disclaimer – personality is broader than any chart
     st.caption(
         "🔍 **Disclaimer:** Your Elemental chart is a powerful lens, but it can’t capture every life influence. "
         "Family, culture, choices, and experiences all shape who you are today—treat this blueprint as a guide, not a verdict."
     )
+    st.markdown("<div style='height: 0.75rem;'></div>", unsafe_allow_html=True)
     # display_pillars_table(st.session_state["bazi_result"])
     # display_element_score_breakdown(st.session_state["bazi_result"])
 
@@ -136,6 +136,12 @@ if "bazi_result" in st.session_state and st.session_state["bazi_result"]:
         identity_element=dm_info["element"],
         identity_polarity=dm_info["polarity"]
     )
+    
+    section_divider()
+
+    display_identity_expanded_paragraphs(dm_info)
+    
+    section_divider()
     
     if (
         "bazi_result" in st.session_state
