@@ -5,6 +5,7 @@ import json
 import re
 import hashlib
 import datetime as dt
+import pytz
 
 SHEET_NAME = "MyElement Leads"
 PROSPECTS_SHEET_NAME = "prospects"  # Main worksheet/tab name for prospect leads
@@ -81,7 +82,8 @@ def append_survey_response(rating: int, user_id: str = "anon", name: str = "") -
     """
     try:
         ws = get_worksheet(SURVEY_SHEET_NAME)
-        timestamp = dt.datetime.utcnow().isoformat()
+        malaysia_tz = pytz.timezone('Asia/Kuala_Lumpur')
+        timestamp = dt.datetime.now(malaysia_tz).isoformat()
         ws.append_row([timestamp, rating, user_id, name])
         return "added"
     except Exception as e:

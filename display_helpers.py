@@ -1,6 +1,7 @@
 import random
 import datetime as dt
 import pycountry
+import pytz
 import streamlit as st
 import streamlit.components.v1 as components
 from gsheet_helpers import append_to_gsheet, is_valid_email, make_unique_key, append_survey_response
@@ -851,11 +852,12 @@ def display_paywall_card(
                 if st.button("✔ Yes, proceed to payment"):
                     st.session_state["paywall_confirm"] = True
                     st.session_state["show_paywall_popup"] = False
-
+                    malaysia_tz = pytz.timezone("Asia/Kuala_Lumpur")
+                    malaysia_now = dt.datetime.now(malaysia_tz).strftime("%Y-%m-%d %H:%M:%S")
                     key = make_unique_key(paywall_email, st.session_state.get('dob'), st.session_state.get('birth_time'), kind="FULL")
                     paywall_row = [
                         key,
-                        dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        malaysia_now,
                         st.session_state.get("name"),
                         paywall_email,
                         st.session_state.get("country"),
