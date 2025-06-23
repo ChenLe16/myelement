@@ -9,6 +9,27 @@ CAREER_IMAGE_PATH = "assets/images/result-career.png"
 GROWTH_IMAGE_PATH = "assets/images/result-growth.png"
 RELATIONSHIP_IMAGE_PATH = "assets/images/result-relationship.png"
 
+# FEATURE CARDS
+FEATURE_CARDS = [
+    {
+        "color": "green",
+        "label": "ELEMENT MIRROR",
+        "headline": "Spot Your Quietest Element",
+        "body": "Every chart hides one “quiet” element. We surface it in seconds and show how that blind-spot explains recurring dips in energy or focus.",
+        "image_path": "assets/images/feature-1.png",
+        "button_text": "Reveal Mine",
+    },
+    {
+        "color": "blue",
+        "label": "CAREER COMPASS",
+        "headline": "Find Roles You Thrive In",
+        "body": "Your chart highlights work styles, team dynamics, and industries where your element shines—plus a short list of “energy-drain” settings to avoid or minimise.",
+        "image_path": "assets/images/feature-2.png",
+        "button_text": "Generate My Free Meter",
+    },
+    # Add more feature cards as needed...
+]
+
 # SOCIAL ICONS & LINKS
 SOCIAL_LINKS = {
     "instagram": {

@@ -5,7 +5,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 from gsheet_helpers import append_to_gsheet, is_valid_email, make_unique_key, append_survey_response
 from bazi_constants import ELEMENT_EMOJIS, ELEMENT_COLORS, BG_GRADIENT, ELEMENT_SHADOW, SUPPORT_EMAIL
-from ui_constants import LOGO_ICON_PATH, CAREER_IMAGE_PATH, GROWTH_IMAGE_PATH, RELATIONSHIP_IMAGE_PATH, IDENTITY_COLORS, SOCIAL_LINKS
+from ui_constants import LOGO_ICON_PATH, HERO_IMAGE_PATH, CAREER_IMAGE_PATH, GROWTH_IMAGE_PATH, RELATIONSHIP_IMAGE_PATH, IDENTITY_COLORS, FEATURE_CARDS, SOCIAL_LINKS
 
 # --- Standalone human check function ---
 def display_human_check():
@@ -53,7 +53,20 @@ def display_custom_css():
     </style>
     """, unsafe_allow_html=True)
 
+def display_hero_image():
+    """Display the hero image at the top of the landing page."""
+    st.image(HERO_IMAGE_PATH)
+
 def display_identity_section(title, color, image_path, paragraph):
+    """
+    Displays an identity section with an image and descriptive text in two columns.
+
+    Args:
+        title (str): The section title.
+        color (str): Color for the title.
+        image_path (str): Path to the section image.
+        paragraph (str): Descriptive text for the section.
+    """
     # Use columns for layout: image and text, with vertical alignment
     col1, col2 = st.columns([1, 2], gap="medium")
     with col1:
@@ -157,6 +170,23 @@ def display_feature_card(
                         button_callback()
         with col_img:
             st.image(image_path, use_container_width=True)
+
+def display_all_feature_cards(callback):
+    """
+    Iterate through all feature cards and display them.
+    The callback is passed to the feature card button.
+    """
+    for card in FEATURE_CARDS:
+        display_feature_card(
+            color=card["color"],
+            label=card["label"],
+            headline=card["headline"],
+            body=card["body"],
+            image_path=card["image_path"],
+            button_text=card["button_text"],
+            button_callback=callback
+        )
+        section_divider()  # Optionally, add dividers between cards
 
 def display_main_input_form():
     """
@@ -1006,6 +1036,10 @@ def display_footer() -> None:
     )
 
 def my_scroll_callback():
+    """
+    Scrolls smoothly to the main input form section of the page.
+    Useful for callbacks after actions.
+    """
     import streamlit.components.v1 as components
     components.html(
         """

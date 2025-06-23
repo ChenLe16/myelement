@@ -11,6 +11,18 @@ PROSPECTS_SHEET_NAME = "prospects"  # Main worksheet/tab name for prospect leads
 SURVEY_SHEET_NAME = "survey"  # Name of the new worksheet/tab in your Google Sheet
 EMAIL_PATTERN = re.compile(r"^[\w\.-]+@[\w\.-]+\.\w+$")
 
+def get_worksheet(tab_name: str):
+    """Return a worksheet instance for the given tab_name."""
+    scope = [
+        "https://spreadsheets.google.com/feeds",
+        "https://www.googleapis.com/auth/drive"
+    ]
+    creds_dict = json.loads(st.secrets["google_service_account"])
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+    client = gspread.authorize(creds)
+    sheet = client.open(SHEET_NAME)
+    return sheet.worksheet(tab_name)
+
 def is_valid_email(email: str) -> bool:
     """Check if the provided email string is a valid email address.
     
@@ -34,11 +46,7 @@ def append_to_gsheet(data: list) -> str:
         'error: <message>' if an error occurred.
     """
     try:
-        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        creds_dict = json.loads(st.secrets["google_service_account"])
-        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-        client = gspread.authorize(creds)
-        sheet = client.open(SHEET_NAME).worksheet(PROSPECTS_SHEET_NAME)
+        sheet = get_worksheet(PROSPECTS_SHEET_NAME)
         key = data[0]
         if sheet.findall(key):
             return 'duplicate'
@@ -62,7 +70,7 @@ def make_unique_key(email: str, dob: dt.date, birth_time: dt.time, kind: str = "
     key_source = f"{email}-{dob.strftime('%Y-%m-%d')}-{birth_time.strftime('%H:%M')}-{kind}"
     return hashlib.sha256(key_source.encode("utf-8")).hexdigest()
 
-def append_survey_response(rating, user_id="anon", name=""):
+def append_survey_response(rating: int, user_id: str = "anon", name: str = "") -> str:
     """Append a survey response to the Survey sheet.
     Args:
         rating: Integer, 1 to 4 (accuracy rating).
@@ -72,12 +80,7 @@ def append_survey_response(rating, user_id="anon", name=""):
         'added' or error string.
     """
     try:
-        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        creds_dict = json.loads(st.secrets["google_service_account"])
-        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-        client = gspread.authorize(creds)
-        sheet = client.open(SHEET_NAME)
-        ws = sheet.worksheet(SURVEY_SHEET_NAME)
+        ws = get_worksheet(SURVEY_SHEET_NAME)
         timestamp = dt.datetime.utcnow().isoformat()
         ws.append_row([timestamp, rating, user_id, name])
         return "added"
