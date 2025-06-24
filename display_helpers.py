@@ -796,12 +796,6 @@ def display_paywall_card(
     Returns:
         None
     """
-    # Session state setup
-    if "paywall_confirm" not in st.session_state:
-        st.session_state["paywall_confirm"] = False
-    if "show_paywall_popup" not in st.session_state:
-        st.session_state["show_paywall_popup"] = False
-
     st.header(product_name)
 
     with st.container():
@@ -811,9 +805,9 @@ def display_paywall_card(
             st.markdown("\n".join([f"- {item}" for item in left_bullets]))
         with row1_right:
             st.image(product_pdf_cover, use_container_width=True)
-        
+
         section_divider()
-        
+
         row2_left, row2_right = st.columns([1.5, 1])
         with row2_left:
             st.subheader("Why It Matters")
@@ -830,83 +824,35 @@ def display_paywall_card(
             unsafe_allow_html=True
         )
 
-        paywall_email = st.text_input(
-            "Email for delivery (required):",
-            value=st.session_state.get("paywall_email", ""),
-            key="paywall_email"
-        ).strip()
-        paywall_btn_disabled = not (paywall_email and is_valid_email(paywall_email))
-
-        if not st.session_state["paywall_confirm"]:
-            if st.button("RM 29 · Get My Blueprint →", disabled=paywall_btn_disabled):
-                if not paywall_email or not is_valid_email(paywall_email):
-                    st.warning("Please enter a valid email address before proceeding.")
-                else:
-                    st.session_state["show_paywall_popup"] = True
-
-            if st.session_state.get("show_paywall_popup", False):
-                st.warning(
-                    "Are you sure your birth data above is correct? "
-                    "This info will be used for your personalized report."
-                )
-                if st.button("✔ Yes, proceed to payment"):
-                    st.session_state["paywall_confirm"] = True
-                    st.session_state["show_paywall_popup"] = False
-                    malaysia_tz = pytz.timezone("Asia/Kuala_Lumpur")
-                    malaysia_now = dt.datetime.now(malaysia_tz).strftime("%Y-%m-%d %H:%M:%S")
-                    key = make_unique_key(paywall_email, st.session_state.get('dob'), st.session_state.get('birth_time'), kind="FULL")
-                    paywall_row = [
-                        key,
-                        malaysia_now,
-                        st.session_state.get("name"),
-                        paywall_email,
-                        st.session_state.get("country"),
-                        st.session_state.get("dob").strftime("%Y-%m-%d") if st.session_state.get("dob") else "",
-                        st.session_state.get("birth_time").strftime("%H:%M") if st.session_state.get("birth_time") else "",
-                        st.session_state.get("gender"),
-                        "FULL"
-                    ]
-                    try:
-                        append_to_gsheet(paywall_row)
-                    except Exception as e:
-                        st.warning(f"Failed to log prospect to Google Sheet: {e}")
-
-                    # Open Stripe Checkout in new tab, more reliably
-                    components.html(
-                        f"""
-                        <script>
-                        window.open('{stripe_checkout}', '_blank');
-                        </script>
-                        """,
-                        height=0,
-                        width=0
-                    )
-                    st.markdown(
-                        f"""
-                        <div style='background:#224c38; color:#fff; border-radius:9px; padding:18px 16px 14px 16px; font-size:1.1em; margin-top:10px; margin-bottom:8px;'>
-                            You are being redirected to the payment page.<br>
-                            <span style='font-size:1.08em; color:#e1c972;'>
-                            <b>Pop-up blocked?</b> 
-                            <a href="{stripe_checkout}" target="_blank" style="color:#fff; background:#19be6b; padding:7px 22px; border-radius:7px; text-decoration:none; font-weight:700; margin-left:10px; font-size:1.07em; display:inline-block;">
-                                👉 Click here to pay
-                            </a>
-                            </span>
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
-
-        if st.session_state["paywall_confirm"]:
-            # st.success("✅ Confirmed! [Proceed to payment](%s)" % stripe_checkout)
-            st.markdown("**Your provided details:**")
-            st.json({
-                "Name": st.session_state.get("name"),
-                "Email": paywall_email,
-                "Gender": st.session_state.get("gender"),
-                "Country": st.session_state.get("country"),
-                "DOB": str(st.session_state.get("dob")),
-                "Time": str(st.session_state.get("birth_time"))
-            })
+        # Stripe payment link as a styled button (avoids popup blockers)
+        st.markdown(
+            f"""
+            <a href="{stripe_checkout}" target="_blank" style="
+                display:inline-block; 
+                padding: 0.55em 2.1em;
+                font-size: 1.18rem;
+                font-weight: 700;
+                border-radius: 10px;
+                background: #fff;
+                color: #171e3f !important;
+                text-shadow: none;
+                text-decoration: none;
+                box-shadow: 0 2px 12px #1dbf7322;
+                border: none;
+                margin-top: 16px;
+                transition: background 0.2s, outline 0.2s;
+            ">
+                RM 29 · Get My Blueprint →
+            </a>
+            <style>
+            a[title="StripePay"]:hover, a[title="StripePay"]:focus {{
+                background: #f0f5fc !important;
+                outline: 2px solid #1DBF73;
+            }}
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
 
 def display_pdf_request_form(state_dict: dict) -> None:
     """
