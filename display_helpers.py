@@ -8,6 +8,15 @@ from gsheet_helpers import append_to_gsheet, is_valid_email, make_unique_key, ap
 from bazi_constants import ELEMENT_EMOJIS, ELEMENT_COLORS, BG_GRADIENT, ELEMENT_SHADOW, SUPPORT_EMAIL
 from ui_constants import LOGO_ICON_PATH, HERO_IMAGE_PATH, CAREER_IMAGE_PATH, GROWTH_IMAGE_PATH, RELATIONSHIP_IMAGE_PATH, IDENTITY_COLORS, FEATURE_CARDS, SOCIAL_LINKS
 
+# --- Emoji faces for accuracy survey ---
+ACCURACY_FACES = {
+    1: "😞",
+    2: "😕",
+    3: "😐",
+    4: "🙂",
+    5: "😃"
+}
+
 # --- Standalone human check function ---
 def display_human_check():
     """Display a simple human check question and return True if correct, else False."""
@@ -1013,70 +1022,46 @@ def section_divider() -> None:
     
 def display_accuracy_survey():
     """
-    Displays a micro-survey asking the user to rate the result from 1-5 stars.
+    Displays a micro-survey asking the user to rate the result from 1-5 faces (sad → happy).
     Returns the rating value if submitted, else None.
     """
-    st.markdown("""
-        <h3 style='margin-bottom: 1.1em; font-size:1.44em;'>How accurate was your result?</h3>
-        <style>
-        .star-rating-bar {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 2.02rem;
-            gap: 0.06em;
-            margin-bottom: 1.10em;
-        }
-        .star-btn button {
-            min-width: 36px !important;
-            max-width: 36px !important;
-            height: 36px !important;
-            font-size: 1.59rem !important;
-            padding: 0 !important;
-            margin: 0 0px !important;
-        }
-        </style>
-    """, unsafe_allow_html=True)
+    faces = [
+        ("😞", "Not accurate"),
+        ("😕", "Slightly off"),
+        ("😐", "Neutral"),
+        ("🙂", "Pretty accurate"),
+        ("😃", "Spot on!")
+    ]
+    st.markdown("<h3 style='margin-bottom: 1.1em; font-size:1.44em;'>How accurate was your result?</h3>", unsafe_allow_html=True)
+    face_emojis = [f[0] for f in faces]
 
-    if "accuracy_star" not in st.session_state:
-        st.session_state["accuracy_star"] = 0
-    if "accuracy_star_submitted" not in st.session_state:
-        st.session_state["accuracy_star_submitted"] = False
+    # Set default if not set
+    accuracy_face = st.session_state.get("accuracy_face", 0)
+    accuracy_face_submitted = st.session_state.get("accuracy_face_submitted", False)
 
-    # Use much narrower columns for tighter spacing
-    star_cols = st.columns([0.12, 0.12, 0.12, 0.12, 0.12, 1])
-    for i in range(5):
-        with star_cols[i]:
-            star = "★" if st.session_state["accuracy_star"] >= i + 1 else "☆"
-            if st.button(star, key=f"star_btn_{i+1}", help=f"{i+1} star{'s' if i > 0 else ''}"):
-                st.session_state["accuracy_star"] = i + 1
+    # Render the emoji choices as a horizontal radio
+    selection = st.radio(
+        "Rate your result:",
+        options=list(range(1, 6)),
+        format_func=lambda i: face_emojis[i-1],
+        horizontal=True,
+        label_visibility="collapsed",
+        index=(accuracy_face - 1) if accuracy_face else 0
+    )
 
-    # Show selected rating as (N/5) in yellow, slightly bold, after stars, same line
-    with star_cols[5]:
-        if st.session_state["accuracy_star"] > 0:
-            st.markdown(
-                f"""
-                <div style='
-                    display:inline-block;
-                    color:#ffe066;
-                    font-weight:600;
-                    font-size:1.21rem;
-                    margin-left:0.33em;
-                    vertical-align:middle;
-                    line-height: 1;
-                    letter-spacing: 0.01em;
-                '>
-                    ({st.session_state["accuracy_star"]}/5)
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+    # Update state
+    st.session_state["accuracy_face"] = selection
 
-    # Submit button, centered below stars
-    submitted = st.button("Submit Rating", disabled=st.session_state["accuracy_star"] == 0)
-    if submitted:
-        st.session_state["accuracy_star_submitted"] = True
-        st.success(f"Thank you for rating {st.session_state['accuracy_star']} star{'s' if st.session_state['accuracy_star']>1 else ''}!")
-        return st.session_state["accuracy_star"]
+    if selection:
+        st.markdown(
+            f"<div style='text-align:center; color:#ffe066; font-weight:700; font-size:1.38rem; margin:0.5em 0 0.3em 0;'>"
+            f"{faces[selection-1][0]} {faces[selection-1][1]}"
+            f"</div>",
+            unsafe_allow_html=True,
+        )
+        if st.button("Submit Rating", key="submit_accuracy_face"):
+            st.session_state["accuracy_face_submitted"] = True
+            st.success(f"Thank you for rating: {faces[selection-1][1]}")
+            return selection
 
-    return st.session_state["accuracy_star"] if st.session_state["accuracy_star_submitted"] else None
+    return st.session_state.get("accuracy_face") if st.session_state.get("accuracy_face_submitted") else None
