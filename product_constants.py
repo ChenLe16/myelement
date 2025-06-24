@@ -6,7 +6,7 @@ PRODUCT_PDF_CONTENT = "assets/pdf_content.png"
 
 # Bulletpoints
 LEFT_BULLETS = [
-    "6-page personalised PDF  — identity snapshot, full colour star-meter, and chart visuals.",
+    "Personalised PDF  — identity snapshot, full colour star-meter, and chart visuals.",
     "Specifically crafted - non-superstitious.",
     "Action toolkit — four element-matched habits plus Quick Growth Tips you can start today.",
     "30-day money-back guarantee — full refund if you’re not delighted."
